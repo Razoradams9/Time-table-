@@ -150,6 +150,9 @@ export default function Layout() {
                 <span className="user-role">{isHod ? "Administrator" : "Teacher"}</span>
               </span>
             </div>
+            <NavLink to="/change-password" className="ghost small" title="Change password">
+              Password
+            </NavLink>
             <button className="ghost small" onClick={logout}>
               Log out
             </button>

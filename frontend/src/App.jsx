@@ -9,22 +9,29 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Substitutions from "./pages/Substitutions.jsx";
 import Fairness from "./pages/Fairness.jsx";
 import Teachers from "./pages/Teachers.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
 
 function Protected({ children, hodOnly }) {
-  const { user, loading } = useAuth();
+  const { user, loading, mustChangePassword } = useAuth();
   if (loading) return <div className="spinner">Loading…</div>;
   if (!user) return <Navigate to="/login" replace />;
+  // Force the password change before any protected content is reachable.
+  if (mustChangePassword) return <Navigate to="/change-password" replace />;
   if (hodOnly && user.role !== "HOD") return <Navigate to="/" replace />;
   return children;
 }
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, mustChangePassword } = useAuth();
   if (loading) return <div className="spinner">Loading…</div>;
 
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+      <Route
+        path="/change-password"
+        element={user ? <ChangePassword /> : <Navigate to="/login" replace />}
+      />
       <Route
         element={
           <Protected>

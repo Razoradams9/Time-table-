@@ -21,11 +21,40 @@ class Token(BaseModel):
     role: Role
     teacher_id: int
     name: str
+    must_change_password: bool = False
 
 
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+
+class TeacherCreate(BaseModel):
+    name: str
+    email: EmailStr
+    department_id: int | None = None
+    role: Role = Role.TEACHER
+    max_periods_per_day: int = 6
+    initial_password: str | None = None  # if omitted, a random one is generated
+
+
+class TeacherCreatedOut(BaseModel):
+    id: int
+    name: str
+    email: EmailStr
+    role: Role
+    initial_password: str  # shown once to the HOD so they can hand it over
+
+
+class PasswordResetOut(BaseModel):
+    teacher_id: int
+    email: EmailStr
+    new_password: str  # shown once to the HOD
 
 
 # ---------- Core reference data ----------
@@ -79,6 +108,7 @@ class TeacherOut(BaseModel):
     department_id: int | None
     max_periods_per_day: int
     is_active: bool
+    must_change_password: bool = False
 
 
 # ---------- Timetable ----------

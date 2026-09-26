@@ -3,8 +3,8 @@ import { useAuth } from "../auth.jsx";
 
 export default function Login() {
   const { login, branding } = useAuth();
-  const [email, setEmail] = useState("hod@college.edu");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -60,11 +60,10 @@ export default function Login() {
           </button>
         </form>
         <div className="hint">
-          <strong>Demo logins</strong> (password: <code>password123</code>)
+          Use the credentials issued by your department admin. New accounts must
+          set a new password on first sign-in.
           <br />
-          HOD: hod@college.edu
-          <br />
-          Teacher: asha@college.edu, bala@college.edu, deepak@college.edu
+          HOD / Admin: <code>anjana@college.edu</code>
         </div>
       </div>
     </div>
