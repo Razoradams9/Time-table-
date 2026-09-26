@@ -42,10 +42,24 @@ export const api = {
   login: (email, password) =>
     request("/auth/login", { method: "POST", form: { username: email, password } }),
   me: () => request("/auth/me"),
+  changePassword: (current_password, new_password) =>
+    request("/auth/change-password", {
+      method: "POST",
+      body: { current_password, new_password },
+    }),
 
   // reference
   timeSlots: () => request("/reference/time-slots"),
   teachers: () => request("/reference/teachers"),
+  createTeacher: (payload) =>
+    request("/reference/teachers", { method: "POST", body: payload }),
+  deactivateTeacher: (id) =>
+    request(`/reference/teachers/${id}/deactivate`, { method: "POST" }),
+  activateTeacher: (id) =>
+    request(`/reference/teachers/${id}/activate`, { method: "POST" }),
+  resetTeacherPassword: (id) =>
+    request(`/reference/teachers/${id}/reset-password`, { method: "POST" }),
+  departments: () => request("/reference/departments"),
 
   // timetable
   activeTimetable: () => request("/timetable/active"),

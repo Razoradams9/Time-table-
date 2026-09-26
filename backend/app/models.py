@@ -80,6 +80,7 @@ class Teacher(Base):
     department_id: Mapped[int | None] = mapped_column(ForeignKey("departments.id"))
     max_periods_per_day: Mapped[int] = mapped_column(Integer, default=6)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
 
     department: Mapped[Department | None] = relationship(back_populates="teachers")
     subjects: Mapped[list[Subject]] = relationship(secondary=teacher_subjects, back_populates="teachers")

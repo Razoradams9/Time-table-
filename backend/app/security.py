@@ -38,6 +38,30 @@ def create_access_token(teacher: Teacher) -> str:
     return jwt.encode(payload, settings.secret_key, algorithm=settings.algorithm)
 
 
+def generate_password(length: int = 12) -> str:
+    """Generate a readable random password (letters + digits, no ambiguous chars)."""
+    import secrets
+
+    alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789"
+    return "".join(secrets.choice(alphabet) for _ in range(length))
+
+
+def validate_password_strength(password: str) -> None:
+    """Raise HTTP 422 if the password does not meet the minimum policy."""
+    problems = []
+    if len(password) < 8:
+        problems.append("at least 8 characters")
+    if not any(c.isalpha() for c in password):
+        problems.append("a letter")
+    if not any(c.isdigit() for c in password):
+        problems.append("a number")
+    if problems:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Password must contain " + ", ".join(problems) + ".",
+        )
+
+
 def get_current_teacher(
     token: str = Depends(oauth2_scheme),
     db: Session = Depends(get_db),

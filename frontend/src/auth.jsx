@@ -15,6 +15,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [branding, setBranding] = useState(DEFAULT_BRANDING);
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   useEffect(() => {
     async function boot() {
@@ -28,6 +29,7 @@ export function AuthProvider({ children }) {
         try {
           const me = await api.me();
           setUser(me);
+          setMustChangePassword(!!me.must_change_password);
         } catch {
           setToken(null);
         }
@@ -42,16 +44,34 @@ export function AuthProvider({ children }) {
     setToken(tok.access_token);
     const me = await api.me();
     setUser(me);
+    setMustChangePassword(!!tok.must_change_password);
     return me;
   }
 
   function logout() {
     setToken(null);
     setUser(null);
+    setMustChangePassword(false);
+  }
+
+  // Called after a successful password change so the forced-change gate lifts.
+  function clearMustChangePassword() {
+    setMustChangePassword(false);
+    setUser((u) => (u ? { ...u, must_change_password: false } : u));
   }
 
   return (
-    <AuthCtx.Provider value={{ user, loading, login, logout, branding }}>
+    <AuthCtx.Provider
+      value={{
+        user,
+        loading,
+        login,
+        logout,
+        branding,
+        mustChangePassword,
+        clearMustChangePassword,
+      }}
+    >
       {children}
     </AuthCtx.Provider>
   );
