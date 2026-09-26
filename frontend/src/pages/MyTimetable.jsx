@@ -11,6 +11,8 @@ export default function MyTimetable() {
   const [entries, setEntries] = useState([]);
   const [slots, setSlots] = useState([]);
   const [subs, setSubs] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeacherId, setSelectedTeacherId] = useState("all");
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [genMsg, setGenMsg] = useState("");
@@ -20,14 +22,13 @@ export default function MyTimetable() {
     setLoading(true);
     setErr("");
     try {
-      const [e, s, sub] = await Promise.all([
-        api.activeTimetable(),
-        api.timeSlots(),
-        api.substitutions(),
-      ]);
+      const tasks = [api.activeTimetable(), api.timeSlots(), api.substitutions()];
+      if (isHod) tasks.push(api.teachers());
+      const [e, s, sub, t] = await Promise.all(tasks);
       setEntries(e);
       setSlots(s);
       setSubs(sub);
+      if (isHod && t) setTeachers(t);
     } catch (ex) {
       setErr(ex.message);
     } finally {
@@ -38,6 +39,18 @@ export default function MyTimetable() {
   useEffect(() => {
     load();
   }, []);
+
+  // For the HOD: default the selector to the first teacher who actually has
+  // periods, so they land on a readable single-teacher grid rather than "all".
+  useEffect(() => {
+    if (isHod && selectedTeacherId === "all" && teachers.length && entries.length) {
+      const withPeriods = teachers.find((t) =>
+        entries.some((e) => e.teacher.id === t.id)
+      );
+      if (withPeriods) setSelectedTeacherId(withPeriods.id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHod, teachers, entries]);
 
   async function generate() {
     setBusy(true);
@@ -76,21 +89,48 @@ export default function MyTimetable() {
   const mySubs = subs.filter((s) => s.substitute_teacher === user.name);
   const coveredForMe = subs.filter((s) => s.absent_teacher === user.name && s.substitute_teacher);
 
+  // HOD can view one teacher's grid at a time (matches the per-teacher photos),
+  // or "all" for the combined master view.
+  const viewingAll = !isHod || selectedTeacherId === "all";
+  const gridEntries =
+    isHod && selectedTeacherId !== "all"
+      ? entries.filter((e) => e.teacher.id === Number(selectedTeacherId))
+      : entries;
+  const selectedTeacher = teachers.find((t) => t.id === Number(selectedTeacherId));
+
   return (
     <>
       <PageHeader
         badge={isHod ? "Admin view" : "Your schedule"}
-        title={isHod ? "Master Timetable" : "My Weekly Timetable"}
+        title={isHod ? "Teacher Timetables" : "My Weekly Timetable"}
         subtitle={
           isHod
-            ? "The active base timetable across all teachers and classes."
+            ? viewingAll
+              ? "Combined master view. Pick a teacher to see their individual timetable."
+              : `Individual timetable for ${selectedTeacher ? selectedTeacher.name : "teacher"}.`
             : "Your fixed weekly schedule. Substitutions you cover appear below."
         }
       >
-        {isHod && entries.length > 0 && (
-          <button className="ghost" onClick={generate} disabled={busy}>
-            {busy ? "Regenerating…" : "Regenerate"}
-          </button>
+        {isHod && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+            <select
+              value={selectedTeacherId}
+              onChange={(e) => setSelectedTeacherId(e.target.value)}
+              style={{ minWidth: 200 }}
+            >
+              <option value="all">All teachers (master)</option>
+              {teachers.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            {entries.length > 0 && (
+              <button className="ghost" onClick={generate} disabled={busy}>
+                {busy ? "Regenerating…" : "Regenerate"}
+              </button>
+            )}
+          </div>
         )}
       </PageHeader>
 
@@ -105,8 +145,12 @@ export default function MyTimetable() {
               </button>
             )}
           </div>
+        ) : gridEntries.length === 0 ? (
+          <div className="empty-state">
+            <p>{selectedTeacher ? `${selectedTeacher.name} has no scheduled periods.` : "No periods."}</p>
+          </div>
         ) : (
-          <TimetableGrid entries={entries} slots={slots} showTeacher={isHod} />
+          <TimetableGrid entries={gridEntries} slots={slots} showTeacher={viewingAll} />
         )}
         {genMsg && <div className="explain" style={{ marginTop: 12 }}>{genMsg}</div>}
       </div>

@@ -22,7 +22,7 @@ from app.models import (
     Teacher,
     TimeSlot,
 )
-from app.security import generate_password, hash_password
+from app.security import hash_password
 
 # 5 periods/day, Monday..Saturday (the BCA timetable runs Mon-Sat).
 # Period times mirror the college grid (morning periods flagged "preferred").
@@ -177,10 +177,15 @@ def run() -> None:
              ["BCA-PENTEST", "BCA-PY", "BCA-PYLAB", "BCA-AI"], False),
         ]
 
+        # One simple, memorable temporary password for everyone. Each user is
+        # still forced to change it on first login (must_change_password=True),
+        # so this is only ever valid until they set their own.
+        INITIAL_PASSWORD = "Welcome@2026"
+
         credentials: list[tuple[str, str, str, str]] = []  # (name, email, role, password)
         for name, local, codes, is_hod in faculty:
             email = f"{local}@college.edu"
-            password = generate_password()
+            password = INITIAL_PASSWORD
             t = Teacher(
                 name=name,
                 email=email,

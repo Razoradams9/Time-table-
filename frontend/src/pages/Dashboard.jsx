@@ -49,27 +49,27 @@ const DEMO_OVERVIEW = {
 };
 
 const DEMO_SUBS = [
-  { id: 1, period: "Period 1", class_section: "BCA AI - A", subject: "Python",            absent_teacher: "Rahul Kumar",  substitute_teacher: "Anu Thomas",  status: "ASSIGNED" },
-  { id: 2, period: "Period 3", class_section: "BCA AI - B", subject: "DBMS",              absent_teacher: "Sarah Joseph", substitute_teacher: "Vijay Sanker",status: "ASSIGNED" },
-  { id: 3, period: "Period 4", class_section: "BCA - C",    subject: "Operating Systems", absent_teacher: "Meera Nair",   substitute_teacher: "Arun Prasad", status: "ASSIGNED" },
-  { id: 4, period: "Period 5", class_section: "BCA AI - A", subject: "Computer Networks", absent_teacher: "Akhil Raj",    substitute_teacher: null,          status: "UNCOVERED" },
+  { id: 1, period: "Period 1", class_section: "S3 BCA AI",  subject: "Computer Networks", absent_teacher: "Mr. Sameeran",       substitute_teacher: "Dr. Spurgen Ratheash", status: "ASSIGNED" },
+  { id: 2, period: "Period 3", class_section: "S3 BCA DA",  subject: "Database Management Systems", absent_teacher: "Dr. Nisha", substitute_teacher: "Dr. Hari Narayanan",   status: "ASSIGNED" },
+  { id: 3, period: "Period 4", class_section: "S3 BCA CS",  subject: "Operating Systems", absent_teacher: "Ms. Soumya K",       substitute_teacher: "Dr. Sruthi",           status: "ASSIGNED" },
+  { id: 4, period: "Period 5", class_section: "S1 BCA AI-A", subject: "Python Programming", absent_teacher: "Dr. Rajeev",       substitute_teacher: null,                   status: "UNCOVERED" },
 ];
 
 const DEMO_TIMETABLE = [
-  { id: 1, time: "09:00 – 10:00", cls: "BCA AI - A", subject: "Python",            teacher: "Anu Thomas",  room: "Room 204", status: "Scheduled" },
-  { id: 2, time: "10:00 – 11:00", cls: "BCA AI - B", subject: "DBMS",              teacher: "Vijay Sanker",room: "Room 205", status: "Scheduled" },
-  { id: 3, time: "11:00 – 12:00", cls: "BCA - C",    subject: "Operating Systems", teacher: "Arun Prasad", room: "Room 201", status: "Scheduled" },
-  { id: 4, time: "12:00 – 01:00", cls: "BCA AI - A", subject: "Computer Networks", teacher: "TBD",          room: "Room 204", status: "Pending"   },
+  { id: 1, time: "09:00 – 10:00", cls: "S3 BCA AI",   subject: "Computer Networks", teacher: "Mr. Sameeran",        room: "Room-1",    status: "Scheduled" },
+  { id: 2, time: "10:00 – 11:00", cls: "S3 BCA DA",   subject: "Database Management Systems", teacher: "Dr. Nisha", room: "Room-2",    status: "Scheduled" },
+  { id: 3, time: "11:00 – 12:00", cls: "S3 BCA CS",   subject: "Operating Systems", teacher: "Ms. Soumya K",        room: "Room-3",    status: "Scheduled" },
+  { id: 4, time: "12:00 – 01:00", cls: "S1 BCA AI-A", subject: "Python Programming", teacher: "TBD",                room: "Admin Lab", status: "Pending"   },
 ];
 
 const now = new Date();
 const ts  = (minusMinutes) => new Date(now.getTime() - minusMinutes * 60000).toISOString();
 const DEMO_ACTIVITY = [
-  { id: 1, action: "CREATE",   entity: "substitution", detail: "BCA AI - A | Python | Period 1",      actor: "Anu Thomas",   created_at: ts(10) },
-  { id: 2, action: "CANCEL",   entity: "leave",        detail: "Date: " + now.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }), actor: "Rahul Kumar",  created_at: ts(25) },
-  { id: 3, action: "CREATE",   entity: "substitution", detail: "BCA AI - B | DBMS | Period 3",        actor: "Vijay Sanker", created_at: ts(32) },
-  { id: 4, action: "APPROVE",  entity: "timetable",    detail: "Week 5 | Even Semester",              actor: null,           created_at: ts(60) },
-  { id: 5, action: "CREATE",   entity: "teacher",      detail: "Computer Applications Department",    actor: "Meera Nair",   created_at: ts(180) },
+  { id: 1, action: "CREATE",   entity: "substitution", detail: "S3 BCA AI | Computer Networks | Period 1", actor: "Dr. Spurgen Ratheash", created_at: ts(10) },
+  { id: 2, action: "CANCEL",   entity: "leave",        detail: "Date: " + now.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" }), actor: "Dr. Rajeev", created_at: ts(25) },
+  { id: 3, action: "CREATE",   entity: "substitution", detail: "S3 BCA DA | DBMS | Period 3",              actor: "Dr. Hari Narayanan",   created_at: ts(32) },
+  { id: 4, action: "APPROVE",  entity: "timetable",    detail: "Even Semester | 2026",                     actor: null,                   created_at: ts(60) },
+  { id: 5, action: "CREATE",   entity: "teacher",      detail: "Department of Computer Applications",      actor: "Mrs. Anjana Chandran", created_at: ts(180) },
 ];
 
 export default function Dashboard() {

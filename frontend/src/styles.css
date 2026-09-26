@@ -889,6 +889,16 @@ input:focus, select:focus {
   gap: 6px;
   min-width: 620px;
 }
+.grid-tt.grid-tt-6 {
+  grid-template-columns: 90px repeat(6, 1fr);
+  min-width: 760px;
+}
+/* Second+ entry stacked in one cell (combined master view overlaps). */
+.tt-cell .tt-stack {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed #bfdbfe;
+}
 .tt-head {
   font-size: 12px;
   font-weight: 700;

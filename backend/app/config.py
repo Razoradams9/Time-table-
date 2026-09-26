@@ -26,6 +26,16 @@ class Settings(BaseSettings):
     max_substitutions_per_week: int = 3
     same_department_preferred: bool = True
 
+    # Fatigue / rest tunables. These shape how the engine spreads load so
+    # teachers get as much rest as possible. All are soft (scoring) weights so
+    # coverage is never blocked -- a tired teacher is still assigned if they are
+    # the only free option.
+    fatigue_adjacency_penalty: int = 18   # penalty per period touching an existing one (back-to-back)
+    fatigue_gap_bonus: int = 10           # bonus when the assignment leaves a free-period buffer
+    fatigue_run_penalty: int = 14         # extra penalty per period beyond the preferred consecutive run
+    fatigue_max_consecutive: int = 2      # preferred max periods in a row before a rest is wanted
+    fatigue_daily_load_penalty: int = 4   # penalty per period already taught that day
+
     # Notifications (email). If smtp_host is empty, emails are logged to console.
     smtp_host: str = ""
     smtp_port: int = 587

@@ -23,24 +23,42 @@ const IcChevron  = (p) => <Ic {...p} d={<><polyline points="6 9 12 15 18 9"/></>
 const IcChevRight= (p) => <Ic {...p} d={<><polyline points="9 18 15 12 9 6"/></>} />;
 const IcTimetable= (p) => <Ic {...p} d={<><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></>} />;
 
-/* ── Central class data (shared with Substitutions / Timetable) ── */
+/* ── Central class data (shared with Substitutions / Timetable) ──
+   BCA-only, using the real department faculty. */
 export const CLASS_DATA = [
-  { id:1,  name:"BCA AI — Sem 1", program:"BCA", spec:"Artificial Intelligence", sem:1, students:60, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:2,  name:"BCA CS — Sem 1", program:"BCA", spec:"Cyber Security",        sem:1, students:60, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:3,  name:"BCA DA — Sem 1", program:"BCA", spec:"Data Analytics",          sem:1, students:60, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:4,  name:"BCA AI — Sem 3", program:"BCA", spec:"Artificial Intelligence", sem:3, students:58, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:5,  name:"BCA CS — Sem 3", program:"BCA", spec:"Cyber Security",        sem:3, students:57, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:6,  name:"BCA DA — Sem 3", program:"BCA", spec:"Data Analytics",          sem:3, students:59, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:7,  name:"BCA AI — Sem 5", program:"BCA", spec:"Artificial Intelligence", sem:5, students:55, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:8,  name:"BCA CS — Sem 5", program:"BCA", spec:"Cyber Security",        sem:5, students:54, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:9,  name:"BCA DA — Sem 5", program:"BCA", spec:"Data Analytics",          sem:5, students:56, status:"Active", subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"], teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:10, name:"B.Sc CSIT",      program:"B.Sc",spec:"Computer Science & IT",   sem:null,students:null,status:"Active",subjects:["Computer Networks","Database Management Systems","Operating Systems","EVS","Python"],teachers:[{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:11, name:"MCA AI",         program:"MCA", spec:"Artificial Intelligence", sem:null,students:null,status:"Active",subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"],teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:12, name:"MCA CS",         program:"MCA", spec:"Cyber Security",        sem:null,students:null,status:"Active",subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"],teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
-  { id:13, name:"MCA DA",         program:"MCA", spec:"Data Analytics",          sem:null,students:null,status:"Active",subjects:["Python","Computer Networks","Database Management Systems","Operating Systems","EVS"],teachers:[{name:"Anu Thomas",subject:"Python"},{name:"Vijay Sanker",subject:"Computer Networks"},{name:"Arun Prasad",subject:"Operating Systems"},{name:"Meera Nair",subject:"Database Management Systems"},{name:"Sneha Ravi",subject:"EVS"}] },
+  { id:1,  name:"S1 BCA AI-A", program:"BCA", spec:"Artificial Intelligence", sem:1, students:60, status:"Active",
+    subjects:["Python Programming","Discrete Structures & Maths","Digital Fundamentals","Artificial Intelligence"],
+    teachers:[{name:"Dr. Rajeev",subject:"Python Programming"},{name:"Dr. Nisha",subject:"Discrete Structures & Maths"},{name:"Ms. Soumya K",subject:"Digital Fundamentals"},{name:"Mrs. Anjana Chandran",subject:"Artificial Intelligence"}] },
+  { id:2,  name:"S1 BCA AI-B", program:"BCA", spec:"Artificial Intelligence", sem:1, students:58, status:"Active",
+    subjects:["Python Programming","Discrete Structures & Maths","Digital Fundamentals"],
+    teachers:[{name:"Dr. Spurgen Ratheash",subject:"Python Programming"},{name:"Dr. Nisha",subject:"Discrete Structures & Maths"},{name:"Dr. Sruthi",subject:"Digital Fundamentals"}] },
+  { id:3,  name:"S1 BCA CS-A", program:"BCA", spec:"Cyber Security", sem:1, students:59, status:"Active",
+    subjects:["Python Programming","Digital Fundamentals","Discrete Structures & Maths"],
+    teachers:[{name:"Dr. Andal V",subject:"Python Programming"},{name:"Dr. Sruthi",subject:"Digital Fundamentals"},{name:"Dr. Sruthi",subject:"Discrete Structures & Maths"}] },
+  { id:4,  name:"S1 BCA CS-B", program:"BCA", spec:"Cyber Security", sem:1, students:57, status:"Active",
+    subjects:["Python Programming","Digital Fundamentals"],
+    teachers:[{name:"Dr. Andal V",subject:"Python Programming"},{name:"Mr. Sanjay",subject:"Digital Fundamentals"}] },
+  { id:5,  name:"S3 BCA AI", program:"BCA", spec:"Artificial Intelligence", sem:3, students:56, status:"Active",
+    subjects:["Computer Networks","Operating Systems","Deep Learning","Python Programming"],
+    teachers:[{name:"Mr. Sameeran",subject:"Computer Networks"},{name:"Ms. Soumya K",subject:"Operating Systems"},{name:"Dr. Hari Narayanan",subject:"Deep Learning"},{name:"Mr. Joseph James",subject:"Python Programming"}] },
+  { id:6,  name:"S3 BCA CS", program:"BCA", spec:"Cyber Security", sem:3, students:55, status:"Active",
+    subjects:["Computer Networks","Operating Systems","Database Management Systems","Python Programming"],
+    teachers:[{name:"Dr. Spurgen Ratheash",subject:"Computer Networks"},{name:"Dr. Sruthi",subject:"Operating Systems"},{name:"Dr. Hari Narayanan",subject:"Database Management Systems"},{name:"Dr. Meenu Suresh",subject:"Python Programming"}] },
+  { id:7,  name:"S3 BCA DA", program:"BCA", spec:"Data Analytics", sem:3, students:54, status:"Active",
+    subjects:["Database Management Systems","Python Programming","Operating Systems"],
+    teachers:[{name:"Dr. Nisha",subject:"Database Management Systems"},{name:"Dr. Hari Narayanan",subject:"Python Programming"},{name:"Ms. Soumya K",subject:"Operating Systems"}] },
+  { id:8,  name:"S5 BCA AI", program:"BCA", spec:"Artificial Intelligence", sem:5, students:52, status:"Active",
+    subjects:["Generative AI","Deep Learning","Natural Language Processing","Machine Learning"],
+    teachers:[{name:"Mr. Sameeran",subject:"Generative AI"},{name:"Dr. Rajeev",subject:"Deep Learning"},{name:"Dr. Nisha",subject:"Natural Language Processing"},{name:"Mr. Joseph James",subject:"Machine Learning"}] },
+  { id:9,  name:"S5 BCA CS", program:"BCA", spec:"Cyber Security", sem:5, students:50, status:"Active",
+    subjects:["Penetration Testing","Cryptography","Cyber Forensics","Digital Forensics"],
+    teachers:[{name:"Dr. Andal V",subject:"Penetration Testing"},{name:"Ms. Soumya K",subject:"Cryptography"},{name:"Mr. Vipin",subject:"Cyber Forensics"},{name:"Mr. Vipin",subject:"Digital Forensics"}] },
+  { id:10, name:"S5 BCA DA+Gen", program:"BCA", spec:"Data Analytics", sem:5, students:51, status:"Active",
+    subjects:["Data Warehousing & Mining","R Programming","Generative AI"],
+    teachers:[{name:"Dr. Spurgen Ratheash",subject:"Data Warehousing & Mining"},{name:"Dr. Meenu Suresh",subject:"R Programming"},{name:"Mr. Sameeran",subject:"Generative AI"}] },
 ];
 
-const PROGRAMS  = ["All Programs",  "BCA", "B.Sc", "MCA"];
+const PROGRAMS  = ["All Programs",  "BCA"];
 const SEMESTERS = ["All Semesters", "1", "3", "5"];
 
 /* avatar initials + color */
@@ -68,9 +86,9 @@ export default function Classes() {
     return true;
   });
 
-  const bcaCount  = CLASS_DATA.filter(c => c.program === "BCA").length;
-  const bscCount  = CLASS_DATA.filter(c => c.program === "B.Sc").length;
-  const mcaCount  = CLASS_DATA.filter(c => c.program === "MCA").length;
+  const sem1Count = CLASS_DATA.filter(c => c.sem === 1).length;
+  const sem3Count = CLASS_DATA.filter(c => c.sem === 3).length;
+  const sem5Count = CLASS_DATA.filter(c => c.sem === 5).length;
 
   return (
     <div className="cls-page">
@@ -86,9 +104,9 @@ export default function Classes() {
       {/* ── STAT CARDS ── */}
       <div className="cls-stats">
         <ClsStatCard tone="blue"   Icon={IcUsers} value={CLASS_DATA.length} label="Total Classes" />
-        <ClsStatCard tone="green"  Icon={IcGrad}  value={bcaCount}          label="BCA Classes" />
-        <ClsStatCard tone="purple" Icon={IcUsers} value={bscCount}          label="B.Sc Classes" />
-        <ClsStatCard tone="amber"  Icon={IcBook}  value={mcaCount}          label="MCA Classes" />
+        <ClsStatCard tone="green"  Icon={IcGrad}  value={sem1Count}         label="Semester 1" />
+        <ClsStatCard tone="purple" Icon={IcUsers} value={sem3Count}         label="Semester 3" />
+        <ClsStatCard tone="amber"  Icon={IcBook}  value={sem5Count}         label="Semester 5" />
       </div>
 
       {/* ── FILTERS ── */}

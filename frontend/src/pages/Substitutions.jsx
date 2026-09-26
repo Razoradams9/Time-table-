@@ -28,37 +28,37 @@ const IcBook      = (p) => <Ic {...p} d={<><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17
 
 /* ── Demo data ── */
 const INITIAL_SUBS = [
-  { id: 1, period: "1", time: "09:00 - 10:00", cls: "BCA AI - A", subject: "Python",            absent: "Rahul Kumar",  assigned: "Anu Thomas",   status: "ASSIGNED" },
-  { id: 2, period: "2", time: "10:00 - 11:00", cls: "BCA AI - B", subject: "DBMS",              absent: "Sarah Joseph", assigned: "Vijay Sanker", status: "ASSIGNED" },
-  { id: 3, period: "3", time: "11:00 - 12:00", cls: "BCA - C",    subject: "Operating Systems", absent: "Meera Nair",   assigned: "Arun Prasad",  status: "ASSIGNED" },
-  { id: 4, period: "4", time: "12:00 - 01:00", cls: "BCA AI - A", subject: "Computer Networks", absent: "Akhil Raj",    assigned: "Priya Menon",  status: "ASSIGNED" },
-  { id: 5, period: "5", time: "02:00 - 03:00", cls: "BCA - B",    subject: "Java",               absent: "Nikhil Varma", assigned: null,           status: "UNASSIGNED" },
-  { id: 6, period: "6", time: "03:00 - 04:00", cls: "BCA AI - C", subject: "Database",           absent: "Fahad Ali",   assigned: "Sneha Ravi",   status: "ASSIGNED" },
+  { id: 1, period: "1", time: "08:30 - 09:25", cls: "S3 BCA AI",   subject: "Computer Networks", absent: "Mr. Sameeran",  assigned: "Dr. Spurgen Ratheash", status: "ASSIGNED" },
+  { id: 2, period: "2", time: "09:25 - 10:20", cls: "S3 BCA DA",   subject: "DBMS",              absent: "Dr. Nisha",     assigned: "Dr. Hari Narayanan",   status: "ASSIGNED" },
+  { id: 3, period: "3", time: "10:40 - 11:35", cls: "S3 BCA CS",   subject: "Operating Systems", absent: "Ms. Soumya K",  assigned: "Dr. Sruthi",           status: "ASSIGNED" },
+  { id: 4, period: "4", time: "11:35 - 12:30", cls: "S5 BCA AI",   subject: "Deep Learning",     absent: "Mr. Joseph James", assigned: "Dr. Rajeev",        status: "ASSIGNED" },
+  { id: 5, period: "5", time: "12:30 - 13:25", cls: "S1 BCA AI-A", subject: "Python Programming", absent: "Dr. Rajeev",   assigned: null,                   status: "UNASSIGNED" },
+  { id: 6, period: "6", time: "13:25 - 14:20", cls: "S3 BCA CS",   subject: "Python Programming", absent: "Dr. Hari Narayanan", assigned: "Dr. Meenu Suresh", status: "ASSIGNED" },
 ];
 
 const FREE_TEACHERS = [
-  { id: 1, name: "Priya Menon",  dept: "BCA", currentPeriod: "Free",         status: "Available", auto: true },
-  { id: 2, name: "Arun Prasad",  dept: "BCA", currentPeriod: "Class in 5th", status: "Busy",      auto: false },
-  { id: 3, name: "Anu Thomas",   dept: "BCA", currentPeriod: "Free",         status: "Available", auto: false },
-  { id: 4, name: "Vijay Sanker", dept: "BCA", currentPeriod: "Lab Duty",     status: "Busy",      auto: false },
-  { id: 5, name: "Sneha Ravi",   dept: "BCA", currentPeriod: "Free",         status: "Available", auto: false },
+  { id: 1, name: "Dr. Manivasagam", dept: "BCA", currentPeriod: "Free",         status: "Available", auto: true },
+  { id: 2, name: "Dr. Andal V",     dept: "BCA", currentPeriod: "Class in 5th", status: "Busy",      auto: false },
+  { id: 3, name: "Mr. Sanjay",      dept: "BCA", currentPeriod: "Free",         status: "Available", auto: false },
+  { id: 4, name: "Mr. Vipin",       dept: "BCA", currentPeriod: "Lab Duty",     status: "Busy",      auto: false },
+  { id: 5, name: "Dr. Meenu Suresh", dept: "BCA", currentPeriod: "Free",        status: "Available", auto: false },
 ];
 
 const INITIAL_ACTIVITY = [
-  { id: 1, tone: "green", title: "Substitute assigned: Anu Thomas",   detail: "BCA AI - A | Python | Period 1",   time: "10 mins ago" },
-  { id: 2, tone: "green", title: "Substitute assigned: Vijay Sanker", detail: "BCA AI - B | DBMS | Period 2",     time: "25 mins ago" },
-  { id: 3, tone: "green", title: "Substitute assigned: Arun Prasad",  detail: "BCA - C | OS | Period 3",          time: "32 mins ago" },
-  { id: 4, tone: "red",   title: "Teacher marked absent: Nikhil Varma",detail: "BCA - B | Java | Period 5",       time: "1 hour ago" },
-  { id: 5, tone: "green", title: "Substitute assigned: Sneha Ravi",   detail: "BCA AI - C | Database | Period 6", time: "1 hour ago" },
+  { id: 1, tone: "green", title: "Substitute assigned: Dr. Spurgen Ratheash", detail: "S3 BCA AI | Computer Networks | Period 1", time: "10 mins ago" },
+  { id: 2, tone: "green", title: "Substitute assigned: Dr. Hari Narayanan",   detail: "S3 BCA DA | DBMS | Period 2",              time: "25 mins ago" },
+  { id: 3, tone: "green", title: "Substitute assigned: Dr. Sruthi",          detail: "S3 BCA CS | OS | Period 3",                time: "32 mins ago" },
+  { id: 4, tone: "red",   title: "Teacher marked absent: Dr. Rajeev",        detail: "S1 BCA AI-A | Python | Period 5",          time: "1 hour ago" },
+  { id: 5, tone: "green", title: "Substitute assigned: Dr. Meenu Suresh",    detail: "S3 BCA CS | Python | Period 6",            time: "1 hour ago" },
 ];
 
 /* Auto-assign steps */
 const STEPS = [
-  { label: "Absence Detected",           desc: "Nikhil Varma is marked absent for Period 5 (02:00 - 03:00)" },
+  { label: "Absence Detected",           desc: "Dr. Rajeev is marked absent for Period 5 (12:30 - 13:25)" },
   { label: "Finding Available Teachers", desc: "Checking teachers who are free during this period..." },
   { label: "Filtering Conflicts",        desc: "Excluding teachers who are already assigned or absent..." },
   { label: "Selecting Teacher",          desc: "Found 3 available teachers. Selecting the first available..." },
-  { label: "Assigning Class",            desc: "Assigning Java (BCA - B) to Priya Menon..." },
+  { label: "Assigning Class",            desc: "Assigning Python Programming (S1 BCA AI-A) to Dr. Manivasagam..." },
   { label: "Completed",                  desc: "Updating timetable and notifying teacher..." },
 ];
 
@@ -70,7 +70,7 @@ export default function Substitutions() {
   const [drawerOpen,   setDrawerOpen]   = useState(false);
   const [stepsDone,    setStepsDone]    = useState(0);   // 0 = not started, 1-6 = steps complete
   const [assigned,     setAssigned]     = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState(1); // Priya Menon pre-selected
+  const [selectedTeacher, setSelectedTeacher] = useState(1); // Dr. Manivasagam pre-selected
   const [activeTab,    setActiveTab]    = useState("today");
   const [filterCls,    setFilterCls]    = useState("all");
   const [filterStatus, setFilterStatus] = useState("all");
@@ -105,12 +105,12 @@ export default function Substitutions() {
         setAssigned(true);
         // update table
         setSubs(prev => prev.map(s =>
-          s.id === 5 ? { ...s, status: "ASSIGNED", assigned: "Priya Menon" } : s
+          s.id === 5 ? { ...s, status: "ASSIGNED", assigned: "Dr. Manivasagam" } : s
         ));
         // add activity
         setActivity(prev => [
-          { id: Date.now(), tone: "green", title: "Substitute assigned: Priya Menon",
-            detail: "BCA - B | Java | Period 5", time: "just now" },
+          { id: Date.now(), tone: "green", title: "Substitute assigned: Dr. Manivasagam",
+            detail: "S1 BCA AI-A | Python | Period 5", time: "just now" },
           ...prev,
         ]);
       }
@@ -349,12 +349,12 @@ export default function Substitutions() {
               <div className="assign-details-title">Assignment Details</div>
               <div className="assign-details">
                 {[
-                  [IcBook,     "Class",         "BCA - B"],
-                  [IcBook,     "Subject",        "Java"],
-                  [IcClock,    "Period",          "5 (02:00 - 03:00)"],
-                  [IcMapPin,   "Room",            "TBD"],
-                  [IcUser,     "Absent Teacher",  "Nikhil Varma"],
-                  [IcUser,     "Assigned To",     assigned ? "Priya Menon" : "—"],
+                  [IcBook,     "Class",         "S1 BCA AI-A"],
+                  [IcBook,     "Subject",        "Python Programming"],
+                  [IcClock,    "Period",          "5 (12:30 - 13:25)"],
+                  [IcMapPin,   "Room",            "Admin Lab"],
+                  [IcUser,     "Absent Teacher",  "Dr. Rajeev"],
+                  [IcUser,     "Assigned To",     assigned ? "Dr. Manivasagam" : "—"],
                 ].map(([Icon, label, val]) => (
                   <div key={label} className="assign-row">
                     <span className="assign-icon"><Icon size={14} /></span>
@@ -372,7 +372,7 @@ export default function Substitutions() {
                   <div className="success-icon"><IcCheck size={20} color="#16a34a" /></div>
                   <div>
                     <div className="success-title">Class Assigned Successfully!</div>
-                    <div className="success-body">Priya Menon has been assigned to BCA - B (Java) for Period 5.</div>
+                    <div className="success-body">Dr. Manivasagam has been assigned to S1 BCA AI-A (Python Programming) for Period 5.</div>
                     <div className="success-meta">24 Sep 2026, 10:45 AM</div>
                   </div>
                 </div>

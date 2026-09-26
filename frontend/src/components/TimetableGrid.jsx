@@ -1,4 +1,5 @@
-const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri"];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const DAY_IDXS = [0, 1, 2, 3, 4, 5];
 
 // entries: array of TimetableEntryOut. showTeacher: include teacher name in cell.
 export default function TimetableGrid({ entries, slots, showTeacher = false }) {
@@ -14,17 +15,19 @@ export default function TimetableGrid({ entries, slots, showTeacher = false }) {
     slots.filter((s) => s.is_preferred).map((s) => s.period_index)
   );
 
-  // Map: day -> period -> entry
+  // Map: day -> period -> list of entries (usually one; may be more in the
+  // unfiltered HOD view where two teachers share a class slot).
   const cellMap = {};
   for (const e of entries) {
     const d = e.time_slot.day_of_week;
     const p = e.time_slot.period_index;
-    cellMap[`${d}_${p}`] = e;
+    const key = `${d}_${p}`;
+    (cellMap[key] = cellMap[key] || []).push(e);
   }
 
   return (
     <div className="scroll-x">
-      <div className="grid-tt">
+      <div className="grid-tt grid-tt-6">
         <div className="tt-head">Period</div>
         {DAYS.map((d) => (
           <div className="tt-head" key={d}>
@@ -54,15 +57,20 @@ function RowFragment({ p, time, cellMap, showTeacher, preferred }) {
         <br />
         {time}
       </div>
-      {[0, 1, 2, 3, 4].map((d) => {
-        const e = cellMap[`${d}_${p}`];
-        if (!e) return <div className={`tt-cell${preferred ? " preferred" : ""}`} key={d} />;
+      {DAY_IDXS.map((d) => {
+        const list = cellMap[`${d}_${p}`];
+        if (!list || list.length === 0)
+          return <div className={`tt-cell${preferred ? " preferred" : ""}`} key={d} />;
         return (
           <div className={`tt-cell filled${preferred ? " preferred" : ""}`} key={d}>
-            <div className="subj">{e.subject.name}</div>
-            <div className="meta">{e.class_section.name}</div>
-            <div className="meta">{e.room.name}</div>
-            {showTeacher && <div className="meta">{e.teacher.name}</div>}
+            {list.map((e, i) => (
+              <div key={e.id} className={i > 0 ? "tt-stack" : undefined}>
+                <div className="subj">{e.subject.name}</div>
+                <div className="meta">{e.class_section.name}</div>
+                <div className="meta">{e.room.name}</div>
+                {showTeacher && <div className="meta">{e.teacher.name}</div>}
+              </div>
+            ))}
           </div>
         );
       })}

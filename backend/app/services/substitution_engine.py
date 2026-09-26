@@ -130,6 +130,63 @@ def _subs_this_week(db: Session, d: date) -> dict[int, int]:
     return counts
 
 
+def _period_index_of_slot(db: Session, slot_id: int) -> int:
+    slot = db.get(TimeSlot, slot_id)
+    return slot.period_index if slot else -1
+
+
+def _fatigue_assessment(
+    occupied_periods: set[int], target_period: int
+) -> tuple[float, list[str]]:
+    """Score how much this assignment respects the teacher's rest.
+
+    Higher score = better rested outcome. Looks at the periods the teacher
+    already works that day and the period we'd add, then rewards keeping gaps
+    and penalizes back-to-back teaching and long unbroken runs.
+    """
+    from app.config import settings
+
+    score = 0.0
+    notes: list[str] = []
+    if not occupied_periods:
+        # Their only period that day: maximally rested. Small reward.
+        score += settings.fatigue_gap_bonus
+        notes.append("only period that day")
+        return score, notes
+
+    # Adjacency: is the new period immediately before/after an existing one?
+    touches_before = (target_period - 1) in occupied_periods
+    touches_after = (target_period + 1) in occupied_periods
+    if touches_before and touches_after:
+        # Fills a gap -> sandwiched, worst for rest.
+        score -= settings.fatigue_adjacency_penalty * 2
+        notes.append("would remove a rest gap (back-to-back both sides)")
+    elif touches_before or touches_after:
+        score -= settings.fatigue_adjacency_penalty
+        notes.append("adjacent to an existing period")
+    else:
+        # Isolated with a buffer on both sides -> keeps rest.
+        score += settings.fatigue_gap_bonus
+        notes.append("keeps a free-period buffer")
+
+    # Consecutive run length that this assignment would create.
+    run = 1
+    p = target_period - 1
+    while p in occupied_periods:
+        run += 1
+        p -= 1
+    p = target_period + 1
+    while p in occupied_periods:
+        run += 1
+        p += 1
+    if run > settings.fatigue_max_consecutive:
+        over = run - settings.fatigue_max_consecutive
+        score -= settings.fatigue_run_penalty * over
+        notes.append(f"{run} periods in a row")
+
+    return score, notes
+
+
 def rank_candidates(
     db: Session,
     entry: TimetableEntry,
@@ -142,6 +199,7 @@ def rank_candidates(
     slot_id = entry.time_slot_id
     subject = entry.subject
     dept_id = subject.department_id
+    target_period = _period_index_of_slot(db, slot_id)
 
     on_leave = _teachers_on_leave(db, d)
     base_busy = _busy_slots_from_base(db, d)
@@ -149,12 +207,24 @@ def rank_candidates(
     avail = _availability_map(db)
     week_counts = _subs_this_week(db, d)
 
+    # Map slot ids -> period_index so we can reason about adjacency/gaps.
+    slot_period = {
+        s.id: s.period_index for s in db.scalars(select(TimeSlot)).all()
+    }
+
     # Periods each teacher already has that day (base + subs) for workload + cap.
     day_load: dict[int, int] = {}
+    occupied_periods: dict[int, set[int]] = {}
     for tid, slots in base_busy.items():
         day_load[tid] = day_load.get(tid, 0) + len(slots)
+        occupied_periods.setdefault(tid, set()).update(
+            slot_period.get(s, -1) for s in slots
+        )
     for tid, slots in sub_busy.items():
         day_load[tid] = day_load.get(tid, 0) + len(slots)
+        occupied_periods.setdefault(tid, set()).update(
+            slot_period.get(s, -1) for s in slots
+        )
 
     ranked: list[RankedCandidate] = []
     for teacher in db.scalars(select(Teacher).where(Teacher.is_active.is_(True))).all():
@@ -193,10 +263,17 @@ def rank_candidates(
         score += max(0, (settings.max_substitutions_per_week - given)) * 8
         reasons.append(f"{given} substitution(s) this week")
 
-        # Lighter day load -> higher score.
+        # ----- Fatigue / rest: prefer teachers who stay well-rested -----
         load = day_load.get(tid, 0)
-        score += max(0, (teacher.max_periods_per_day - load)) * 2
+        # Lighter day so far -> higher score (rest-aware weight).
+        score -= load * settings.fatigue_daily_load_penalty
         reasons.append(f"{load} period(s) today")
+
+        fatigue_score, fatigue_notes = _fatigue_assessment(
+            occupied_periods.get(tid, set()), target_period
+        )
+        score += fatigue_score
+        reasons.extend(fatigue_notes)
 
         # Respect the weekly cap as a soft preference (hard cap could be enabled).
         if given >= settings.max_substitutions_per_week:

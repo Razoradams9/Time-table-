@@ -28,9 +28,18 @@ def explain_substitution(sub: Substitution) -> str:
     if sub.substitute_teacher_id and sub.substitute_teacher:
         name = sub.substitute_teacher.name
         basis = sub.explanation or "was the best available match"
+        rest_note = ""
+        low = (sub.explanation or "").lower()
+        if "free-period buffer" in low or "only period that day" in low:
+            rest_note = " This assignment also keeps their day well-rested."
+        elif "back-to-back" in low or "in a row" in low or "adjacent" in low:
+            rest_note = (
+                " They were still the best-rested option available, though it "
+                "adds to their teaching stretch."
+            )
         return (
             f"{name} was chosen to cover {subject} for {cls} in {when}. "
-            f"Reason: {basis}."
+            f"Reason: {basis}.{rest_note}"
         )
     return (
         f"No substitute could be assigned for {subject} ({cls}) in {when}. "

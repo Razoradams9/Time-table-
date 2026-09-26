@@ -10,6 +10,7 @@ import Substitutions from "./pages/Substitutions.jsx";
 import Fairness from "./pages/Fairness.jsx";
 import Teachers from "./pages/Teachers.jsx";
 import Classes from "./pages/Classes.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
 
 function Protected({ children, hodOnly }) {
   const { user, loading, mustChangePassword } = useAuth();
