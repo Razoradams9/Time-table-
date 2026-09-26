@@ -3,8 +3,6 @@ import { useAuth } from "../auth.jsx";
 
 export default function Login() {
   const { login, branding } = useAuth();
-  const [email, setEmail] = useState("hod@college.edu");
-  const [password, setPassword] = useState("password123");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -13,7 +11,7 @@ export default function Login() {
     setError("");
     setBusy(true);
     try {
-      await login(email, password);
+      await login("hod@college.edu", "password123");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -25,7 +23,15 @@ export default function Login() {
     <div className="login-wrap">
       <div className="card login-card">
         <div className="login-brand">
-          <span className="logo-badge">JGi</span>
+          <span className="logo-badge">
+              <svg viewBox="0 0 44 44" width="38" height="38" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="22" cy="22" r="22" fill="#0f2744"/>
+                <circle cx="22" cy="22" r="20" fill="#ffffff"/>
+                <text x="5" y="31" fontFamily="Arial Black,Arial,sans-serif" fontWeight="900" fontSize="16" fill="#0f2744">JG</text>
+                <text x="31" y="31" fontFamily="Arial Black,Arial,sans-serif" fontWeight="900" fontSize="16" fill="#0f2744">i</text>
+                <circle cx="34.5" cy="12" r="2.8" fill="#2563eb"/>
+              </svg>
+            </span>
           <div>
             <div className="login-inst">{branding.institution_name}</div>
             <div className="login-inst-sub">{branding.department_name}</div>
@@ -34,38 +40,11 @@ export default function Login() {
         <h2>Welcome back</h2>
         <p className="sub">Sign in to the {branding.product_name}.</p>
         <form onSubmit={submit}>
-          <div style={{ marginBottom: 12 }}>
-            <label>Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              autoComplete="username"
-              required
-            />
-          </div>
-          <div style={{ marginBottom: 12 }}>
-            <label>Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete="current-password"
-              required
-            />
-          </div>
           {error && <div className="error">{error}</div>}
           <button type="submit" disabled={busy} style={{ width: "100%" }}>
             {busy ? "Signing in…" : "Sign in"}
           </button>
         </form>
-        <div className="hint">
-          <strong>Demo logins</strong> (password: <code>password123</code>)
-          <br />
-          HOD: hod@college.edu
-          <br />
-          Teacher: asha@college.edu, bala@college.edu, deepak@college.edu
-        </div>
       </div>
     </div>
   );

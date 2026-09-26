@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Substitutions from "./pages/Substitutions.jsx";
 import Fairness from "./pages/Fairness.jsx";
 import Teachers from "./pages/Teachers.jsx";
+import Classes from "./pages/Classes.jsx";
 
 function Protected({ children, hodOnly }) {
   const { user, loading } = useAuth();
@@ -41,6 +42,14 @@ export default function App() {
           element={
             <Protected hodOnly>
               <Teachers />
+            </Protected>
+          }
+        />
+        <Route
+          path="/classes"
+          element={
+            <Protected hodOnly>
+              <Classes />
             </Protected>
           }
         />
