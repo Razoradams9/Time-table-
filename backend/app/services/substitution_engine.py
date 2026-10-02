@@ -180,9 +180,13 @@ def _fatigue_assessment(
         run += 1
         p += 1
     if run > settings.fatigue_max_consecutive:
+        # Exceeding the cap is strongly discouraged -- a continuing period past
+        # the limit should only happen when there is genuinely no better option.
+        # Big penalty per period over the cap (soft, so coverage is never
+        # blocked, but it pushes such teachers to the bottom of the list).
         over = run - settings.fatigue_max_consecutive
-        score -= settings.fatigue_run_penalty * over
-        notes.append(f"{run} periods in a row")
+        score -= settings.fatigue_run_penalty * 6 * over
+        notes.append(f"{run} periods in a row (over the {settings.fatigue_max_consecutive}-in-a-row limit)")
 
     return score, notes
 

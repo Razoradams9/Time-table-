@@ -60,11 +60,15 @@ export const api = {
   resetTeacherPassword: (id) =>
     request(`/reference/teachers/${id}/reset-password`, { method: "POST" }),
   departments: () => request("/reference/departments"),
+  classes: () => request("/reference/classes"),
 
   // timetable
   activeTimetable: () => request("/timetable/active"),
+  timetableVersion: (v) => request(`/timetable/version/${v}`),
   generate: () => request("/timetable/generate", { method: "POST" }),
+  rebalance: () => request("/timetable/rebalance", { method: "POST" }),
   approve: (v) => request(`/timetable/approve/${v}`, { method: "POST" }),
+  discardVersion: (v) => request(`/timetable/version/${v}`, { method: "DELETE" }),
   versions: () => request("/timetable/versions"),
 
   // leaves

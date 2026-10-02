@@ -26,6 +26,12 @@ class Settings(BaseSettings):
     max_substitutions_per_week: int = 3
     same_department_preferred: bool = True
 
+    # Semester time windows. S1 & S5 BCA run in the morning block; S3 BCA runs
+    # in the afternoon block. Values are the LAST morning period index. With 8
+    # periods (0..7) a value of 3 means morning = periods 0-3 (08:30-12:30) and
+    # afternoon = periods 4-7 (12:30 onward).
+    morning_last_period_index: int = 3
+
     # Fatigue / rest tunables. These shape how the engine spreads load so
     # teachers get as much rest as possible. All are soft (scoring) weights so
     # coverage is never blocked -- a tired teacher is still assigned if they are

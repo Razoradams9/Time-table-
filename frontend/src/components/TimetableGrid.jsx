@@ -1,8 +1,16 @@
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_IDXS = [0, 1, 2, 3, 4, 5];
 
-// entries: array of TimetableEntryOut. showTeacher: include teacher name in cell.
-export default function TimetableGrid({ entries, slots, showTeacher = false }) {
+// entries: array of TimetableEntryOut.
+//   showTeacher: include teacher name in cell.
+//   showClass:   include class-section name in cell (hide it when the whole
+//                grid is already one class/stream).
+export default function TimetableGrid({
+  entries,
+  slots,
+  showTeacher = false,
+  showClass = true,
+}) {
   // Build period rows from distinct period_index in slots.
   const periodIdxs = [...new Set(slots.map((s) => s.period_index))].sort((a, b) => a - b);
   const timeByPeriod = {};
@@ -41,6 +49,7 @@ export default function TimetableGrid({ entries, slots, showTeacher = false }) {
             time={timeByPeriod[p]}
             cellMap={cellMap}
             showTeacher={showTeacher}
+            showClass={showClass}
             preferred={preferredPeriods.has(p)}
           />
         ))}
@@ -49,7 +58,7 @@ export default function TimetableGrid({ entries, slots, showTeacher = false }) {
   );
 }
 
-function RowFragment({ p, time, cellMap, showTeacher, preferred }) {
+function RowFragment({ p, time, cellMap, showTeacher, showClass, preferred }) {
   return (
     <>
       <div className="tt-time">
@@ -66,9 +75,9 @@ function RowFragment({ p, time, cellMap, showTeacher, preferred }) {
             {list.map((e, i) => (
               <div key={e.id} className={i > 0 ? "tt-stack" : undefined}>
                 <div className="subj">{e.subject.name}</div>
-                <div className="meta">{e.class_section.name}</div>
-                <div className="meta">{e.room.name}</div>
+                {showClass && <div className="meta">{e.class_section.name}</div>}
                 {showTeacher && <div className="meta">{e.teacher.name}</div>}
+                <div className="meta">{e.room.name}</div>
               </div>
             ))}
           </div>

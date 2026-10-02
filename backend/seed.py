@@ -68,13 +68,21 @@ def run() -> None:
                 db.add(s)
         db.flush()
 
-        # Rooms (from the grids: Admin Lab, Digi Lab, plus lecture rooms).
+        # Rooms. The department has plenty of lecture rooms (so morning/evening
+        # windows never run out of space) plus the named labs from the grids.
         rooms = [
             Room(name="Room-1", is_lab=False, capacity=60),
             Room(name="Room-2", is_lab=False, capacity=60),
             Room(name="Room-3", is_lab=False, capacity=60),
+            Room(name="Room-4", is_lab=False, capacity=60),
+            Room(name="Room-5", is_lab=False, capacity=60),
+            Room(name="Room-6", is_lab=False, capacity=60),
+            Room(name="Room-7", is_lab=False, capacity=60),
+            Room(name="Room-8", is_lab=False, capacity=60),
             Room(name="Admin Lab", is_lab=True, capacity=30),
             Room(name="Digi Lab", is_lab=True, capacity=30),
+            Room(name="Lab-3", is_lab=True, capacity=30),
+            Room(name="Lab-4", is_lab=True, capacity=30),
         ]
         db.add_all(rooms)
         db.flush()
@@ -112,6 +120,26 @@ def run() -> None:
             ("DBMS Lab", "BCA-DBMSLAB", 3, True, 2),
             ("Forensics Lab", "BCA-FORENSICSLAB", 2, True, 2),
             ("Programming Fundamentals (PFUC)", "BCA-PFUC", 2, False, 3),
+            ("General Elective", "BCA-GE", 1, False, 3),
+            ("DWDM Lab", "BCA-DWDMLAB", 2, True, 2),
+            ("R Programming Lab", "BCA-RPROGLAB", 2, True, 2),
+            # ---- MCA subjects seen in the grids ----
+            ("Advanced Computer Networks", "MCA-ACN", 3, False, 3),
+            ("Data Structures & Algorithms (MCA)", "MCA-DSA", 3, False, 3),
+            ("Python Programming (MCA)", "MCA-PY", 3, False, 3),
+            ("Python Lab (MCA)", "MCA-PYLAB", 3, True, 2),
+            ("NLP (MCA)", "MCA-NLP", 2, False, 3),
+            ("NLP Lab (MCA)", "MCA-NLPLAB", 2, True, 2),
+            ("Employability Skills (MCA)", "MCA-EMP", 1, False, 2),
+            ("Software Engineering (MCA)", "MCA-SE", 2, False, 2),
+            ("Machine Learning (MCA)", "MCA-ML", 3, False, 3),
+            ("Artificial Intelligence (MCA)", "MCA-AI", 3, False, 3),
+            ("Business Computing (MCA)", "MCA-BC", 2, False, 3),
+            ("Business Computing Lab (MCA)", "MCA-BCLAB", 2, True, 2),
+            ("IoT (MCA)", "MCA-IOT", 2, False, 2),
+            ("Generative / NoSQL DB (MCA)", "MCA-NOSQL", 2, False, 2),
+            ("Generative / NoSQL DB Lab (MCA)", "MCA-NOSQLLAB", 2, True, 2),
+            ("DSA Lab (MCA)", "MCA-DSALAB", 3, True, 2),
         ]
         subjects: dict[str, Subject] = {}
         for name, code, importance, is_lab, ppw in subject_specs:
@@ -127,7 +155,7 @@ def run() -> None:
             db.add(s)
         db.flush()
 
-        # Classes seen in the grids (BCA sections across semesters).
+        # Classes seen in the grids (BCA + MCA sections across semesters).
         class_names = [
             "S1 BCA AI-A",
             "S1 BCA AI-B",
@@ -139,6 +167,10 @@ def run() -> None:
             "S5 BCA AI",
             "S5 BCA CS",
             "S5 BCA DA+Gen",
+            "S1 MCA A",
+            "S1 MCA B",
+            "S3 MCA CS",
+            "S3 MCA GEN",
         ]
         classes = [ClassSection(name=n) for n in class_names]
         db.add_all(classes)
@@ -148,33 +180,38 @@ def run() -> None:
         # (name, email-localpart, [subject codes they teach], is_hod)
         faculty = [
             ("Mrs. Anjana Chandran", "anjana",
-             ["BCA-AI", "BCA-CN", "BCA-DBMS"], True),
+             ["BCA-AI", "BCA-CN", "BCA-DBMS", "MCA-ACN", "MCA-BC", "MCA-BCLAB"], True),
             ("Mr. Sameeran", "sameeran",
-             ["BCA-GENAI", "BCA-CN", "BCA-EMP", "BCA-AILIT"], False),
+             ["BCA-GENAI", "BCA-CN", "BCA-EMP", "BCA-AILIT", "BCA-GE", "MCA-EMP"], False),
             ("Dr. Sruthi", "sruthi",
              ["BCA-DIGITAL", "BCA-DIGILAB", "BCA-DSM", "BCA-OS"], False),
             ("Dr. Nisha", "nisha",
-             ["BCA-NLP", "BCA-DBMS", "BCA-DSA", "BCA-DSM"], False),
+             ["BCA-NLP", "BCA-DBMS", "BCA-DSA", "BCA-DSM", "MCA-DSA", "MCA-DSALAB"], False),
             ("Mr. Sanjay", "sanjay",
-             ["BCA-DIGITAL", "BCA-DIGILAB", "BCA-CLDA", "BCA-AI"], False),
+             ["BCA-DIGITAL", "BCA-DIGILAB", "BCA-CLDA", "BCA-AI", "MCA-AI"], False),
             ("Mr. Vipin", "vipin",
              ["BCA-DF", "BCA-CF", "BCA-FORENSICSLAB"], False),
             ("Dr. Manivasagam", "manivasagam",
-             ["BCA-NLP", "BCA-PY", "BCA-PYLAB", "BCA-PFUC"], False),
+             ["BCA-NLP", "BCA-PY", "BCA-PYLAB", "BCA-PFUC",
+              "MCA-NLP", "MCA-NLPLAB", "MCA-PY", "MCA-PYLAB"], False),
             ("Dr. Rajeev", "rajeev",
-             ["BCA-DL", "BCA-IOT", "BCA-PY", "BCA-PYLAB", "BCA-MLLAB"], False),
+             ["BCA-DL", "BCA-IOT", "BCA-PY", "BCA-PYLAB", "BCA-MLLAB",
+              "MCA-AI", "MCA-IOT", "MCA-PY", "MCA-PYLAB"], False),
             ("Dr. Hari Narayanan", "hari",
-             ["BCA-PY", "BCA-PYLAB", "BCA-DBMS", "BCA-DL", "BCA-DBMSLAB"], False),
+             ["BCA-PY", "BCA-PYLAB", "BCA-DBMS", "BCA-DL", "BCA-DBMSLAB", "MCA-AI"], False),
             ("Dr. Spurgen Ratheash", "spurgen",
-             ["BCA-DWDM", "BCA-PY", "BCA-PYLAB", "BCA-DSA", "BCA-CN"], False),
+             ["BCA-DWDM", "BCA-DWDMLAB", "BCA-PY", "BCA-PYLAB", "BCA-DSA", "BCA-CN",
+              "MCA-DSA", "MCA-DSALAB"], False),
             ("Dr. Meenu Suresh", "meenu",
-             ["BCA-RPROG", "BCA-PY", "BCA-NOSQL", "BCA-DBMSLAB"], False),
+             ["BCA-RPROG", "BCA-RPROGLAB", "BCA-PY", "BCA-NOSQL", "BCA-DBMSLAB",
+              "MCA-NOSQL", "MCA-NOSQLLAB"], False),
             ("Mr. Joseph James", "joseph",
-             ["BCA-ML", "BCA-MLLAB", "BCA-PY", "BCA-SE", "BCA-DBMSLAB"], False),
+             ["BCA-ML", "BCA-MLLAB", "BCA-PY", "BCA-SE", "BCA-DBMSLAB",
+              "MCA-ML", "MCA-SE"], False),
             ("Ms. Soumya K", "soumya",
              ["BCA-DIGITAL", "BCA-DIGILAB", "BCA-CRYPTO", "BCA-DBMS", "BCA-OS"], False),
             ("Dr. Andal V", "andal",
-             ["BCA-PENTEST", "BCA-PY", "BCA-PYLAB", "BCA-AI"], False),
+             ["BCA-PENTEST", "BCA-PY", "BCA-PYLAB", "BCA-AI", "MCA-AI"], False),
         ]
 
         # One simple, memorable temporary password for everyone. Each user is

@@ -1797,3 +1797,28 @@ input:focus, select:focus {
   cursor: pointer;
   text-decoration: underline;
 }
+
+/* Segmented toggle (e.g. By stream / By teacher) */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--gray-200, #e5e7eb);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--gray-50, #f9fafb);
+}
+.seg button {
+  background: transparent;
+  border: none;
+  padding: 7px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-500, #6b7280);
+  cursor: pointer;
+}
+.seg button:not(:last-child) {
+  border-right: 1px solid var(--gray-200, #e5e7eb);
+}
+.seg button.seg-on {
+  background: var(--color-indigo, #4f46e5);
+  color: #fff;
+}
