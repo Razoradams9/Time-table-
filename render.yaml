@@ -1,0 +1,18 @@
+# Render blueprint (repo root). Free web service, no card required.
+# Deploys the FastAPI backend from the ./backend Dockerfile.
+services:
+  - type: web
+    name: timetable-backend
+    runtime: docker
+    plan: free
+    region: oregon              # pick the closest region
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true     # Render generates a strong random value
+      - key: DATABASE_URL
+        sync: false             # set in the dashboard: your Neon URL
+      - key: CORS_ORIGINS
+        sync: false             # set to your Vercel URL (or * for now)
