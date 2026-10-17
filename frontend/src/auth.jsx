@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { api, getToken, setToken } from "./api";
+import { api, setToken } from "./api";
 
-const AuthCtx = createContext(null);
+export const AuthCtx = createContext(null);
 
 const DEFAULT_BRANDING = {
   institution_name: "JGI JAIN",
@@ -24,29 +24,14 @@ export function AuthProvider({ children }) {
       } catch {
         /* keep defaults */
       }
-      if (getToken()) {
-        try {
-          const me = await api.me();
-          setUser(me);
-        } catch {
-          setToken(null);
-        }
+      // Mock mode: always auto-login, no backend needed.
+      try {
+        const tok = await api.login();
+        setToken(tok.access_token);
+        setUser(await api.me());
+      } catch {
+        /* user stays null */
       }
-
-      // No login screen: sign in automatically as the default account.
-      // The backend still issues a token, so every API call stays authenticated.
-      const DEFAULT_EMAIL = import.meta.env.VITE_DEFAULT_EMAIL || "anjana@college.edu";
-      const DEFAULT_PASSWORD = import.meta.env.VITE_DEFAULT_PASSWORD || "password123";
-      if (!getToken()) {
-        try {
-          const tok = await api.login(DEFAULT_EMAIL, DEFAULT_PASSWORD);
-          setToken(tok.access_token);
-          setUser(await api.me());
-        } catch {
-          /* user stays null; App shows a "can't reach the server" screen */
-        }
-      }
-
       setLoading(false);
     }
     boot();
@@ -82,6 +67,7 @@ export function AuthProvider({ children }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   return useContext(AuthCtx);
 }

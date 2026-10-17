@@ -1,106 +1,134 @@
-// Thin API client. Uses the Vite proxy, so all calls go to /api/*.
-const TOKEN_KEY = "tt_token";
+// Mock API – returns static data, no backend required.
+import {
+  MOCK_BRANDING,
+  MOCK_TIME_SLOTS,
+  MOCK_TEACHERS,
+  MOCK_CLASSES,
+  MOCK_TIMETABLE_ENTRIES,
+  MOCK_SUBSTITUTIONS,
+  MOCK_LEAVES,
+  MOCK_NOTIFICATIONS,
+  MOCK_OVERVIEW,
+  MOCK_ACTIVITY,
+  MOCK_FAIRNESS,
+  MOCK_CANDIDATES,
+  MOCK_SUGGESTIONS,
+  MOCK_USER,
+} from "./mockData.js";
 
-// In production (Vercel) set VITE_API_URL to the Fly backend, e.g.
-// https://timetable-backend.fly.dev  — then API calls go there directly.
-// Locally it's empty, so calls hit "/api" and Vite proxies to the backend.
-export const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+// Keep these exports so existing imports don't break.
+export const API_BASE = "";
+export function apiUrl(path) { return path; }
+export function getToken() { return "mock-token"; }
+export function setToken() {}
 
-export function apiUrl(path) {
-  return `${API_BASE}/api${path}`;
-}
+// Small delay to simulate network feel.
+const delay = (ms = 120) => new Promise((r) => setTimeout(r, ms));
 
-export function getToken() {
-  return localStorage.getItem(TOKEN_KEY);
-}
-export function setToken(t) {
-  if (t) localStorage.setItem(TOKEN_KEY, t);
-  else localStorage.removeItem(TOKEN_KEY);
-}
-
-async function request(path, { method = "GET", body, form, headers = {} } = {}) {
-  const opts = { method, headers: { ...headers } };
-  const token = getToken();
-  if (token) opts.headers["Authorization"] = `Bearer ${token}`;
-
-  if (form) {
-    opts.body = new URLSearchParams(form).toString();
-    opts.headers["Content-Type"] = "application/x-www-form-urlencoded";
-  } else if (body !== undefined) {
-    opts.body = JSON.stringify(body);
-    opts.headers["Content-Type"] = "application/json";
-  }
-
-  const res = await fetch(apiUrl(path), opts);
-  if (!res.ok) {
-    let detail = `Request failed (${res.status})`;
-    try {
-      const data = await res.json();
-      detail = data.detail || detail;
-    } catch {
-      /* ignore */
-    }
-    throw new Error(detail);
-  }
-  const ct = res.headers.get("content-type") || "";
-  if (ct.includes("application/json")) return res.json();
-  return res;
-}
+// Local mutable state so UI interactions actually work during the session.
+let notifications = [...MOCK_NOTIFICATIONS];
+let leaves = [...MOCK_LEAVES];
+let teachers = [...MOCK_TEACHERS];
+let nextLeaveId = 99;
+let nextTeacherId = 10;
 
 export const api = {
-  login: (email, password) =>
-    request("/auth/login", { method: "POST", form: { username: email, password } }),
-  me: () => request("/auth/me"),
-  changePassword: (current_password, new_password) =>
-    request("/auth/change-password", { method: "POST", body: { current_password, new_password } }),
+  // auth
+  login: async () => { await delay(); return { access_token: "mock-token" }; },
+  me: async () => { await delay(); return MOCK_USER; },
+  changePassword: async () => { await delay(); return { ok: true }; },
 
-  // account management (HOD)
-  listAccounts: () => request("/accounts"),
-  createAccount: (payload) => request("/accounts", { method: "POST", body: payload }),
-  updateAccount: (id, payload) => request(`/accounts/${id}`, { method: "PATCH", body: payload }),
-  resetPassword: (id) => request(`/accounts/${id}/reset-password`, { method: "POST" }),
+  // accounts (Teachers page)
+  listAccounts: async () => { await delay(); return teachers; },
+  createAccount: async (payload) => {
+    await delay();
+    const t = { id: nextTeacherId++, ...payload, role: "TEACHER", is_active: true, temp_password: "TempPass@123" };
+    teachers = [...teachers, t];
+    return t;
+  },
+  updateAccount: async (id, payload) => {
+    await delay();
+    teachers = teachers.map((t) => (t.id === id ? { ...t, ...payload } : t));
+    return teachers.find((t) => t.id === id);
+  },
+  resetPassword: async (id) => { await delay(200); return { temp_password: "Reset@" + id + "123" }; },
 
   // reference
-  timeSlots: () => request("/reference/time-slots"),
-  teachers: () => request("/reference/teachers"),
+  timeSlots: async () => { await delay(); return MOCK_TIME_SLOTS; },
+  teachers: async () => { await delay(); return MOCK_TEACHERS; },
 
   // timetable
-  activeTimetable: () => request("/timetable/active"),
-  generate: () => request("/timetable/generate", { method: "POST" }),
-  approve: (v) => request(`/timetable/approve/${v}`, { method: "POST" }),
-  versions: () => request("/timetable/versions"),
-  viewOptions: () => request("/timetable/view/options"),
-  teacherTimetable: (id) => request(`/timetable/view/teacher/${id}`),
-  classTimetable: (id) => request(`/timetable/view/class/${id}`),
+  activeTimetable: async () => { await delay(); return MOCK_TIMETABLE_ENTRIES; },
+  generate: async () => { await delay(800); return { success: true, version: 3, entries: MOCK_TIMETABLE_ENTRIES.length, message: "" }; },
+  approve: async () => { await delay(); return { ok: true }; },
+  versions: async () => { await delay(); return [{ version: 1 }, { version: 2 }]; },
+  viewOptions: async () => {
+    await delay();
+    return {
+      teachers: MOCK_TEACHERS.map((t) => ({ id: t.id, name: t.name, role: t.role })),
+      classes: MOCK_CLASSES,
+    };
+  },
+  teacherTimetable: async (id) => {
+    await delay();
+    return MOCK_TIMETABLE_ENTRIES.filter((e) => e.teacher_id === id);
+  },
+  classTimetable: async (id) => {
+    await delay();
+    return MOCK_TIMETABLE_ENTRIES.filter((e) => e.class_id === id);
+  },
 
   // leaves
-  myLeaves: () => request("/leaves"),
-  createLeave: (payload) => request("/leaves", { method: "POST", body: payload }),
-  cancelLeave: (id) => request(`/leaves/${id}`, { method: "DELETE" }),
+  myLeaves: async () => { await delay(); return leaves; },
+  createLeave: async (payload) => {
+    await delay(400);
+    const lv = { id: nextLeaveId++, ...payload, status: "ACTIVE" };
+    leaves = [lv, ...leaves];
+    return lv;
+  },
+  cancelLeave: async (id) => {
+    await delay();
+    leaves = leaves.map((l) => (l.id === id ? { ...l, status: "CANCELLED" } : l));
+    return { ok: true };
+  },
 
   // substitutions
-  substitutions: (on) => request(`/substitutions${on ? `?on=${on}` : ""}`),
-  candidates: (id) => request(`/substitutions/${id}/candidates`),
-  suggestions: (id) => request(`/substitutions/${id}/suggestions`),
-  assignSub: (id, teacherId) =>
-    request(`/substitutions/${id}/assign`, {
-      method: "POST",
-      body: { substitute_teacher_id: teacherId },
-    }),
+  substitutions: async () => { await delay(); return MOCK_SUBSTITUTIONS; },
+  candidates: async () => { await delay(300); return MOCK_CANDIDATES; },
+  suggestions: async () => { await delay(300); return MOCK_SUGGESTIONS; },
+  assignSub: async (subId, teacherId) => {
+    await delay(400);
+    const teacher = MOCK_TEACHERS.find((t) => t.id === teacherId);
+    MOCK_SUBSTITUTIONS.forEach((s) => {
+      if (s.id === subId) {
+        s.status = "ASSIGNED";
+        s.substitute_teacher = teacher?.name ?? "Unknown";
+      }
+    });
+    return { ok: true };
+  },
 
   // dashboard
-  summary: (on) => request(`/dashboard/summary${on ? `?on=${on}` : ""}`),
-  overview: (on) => request(`/dashboard/overview${on ? `?on=${on}` : ""}`),
-  activity: (limit = 10) => request(`/dashboard/activity?limit=${limit}`),
-  fairness: (start, end) => request(`/dashboard/fairness?start=${start}&end=${end}`),
-  leaveHistory: (teacherId) => request(`/dashboard/leave-history/${teacherId}`),
+  summary: async () => { await delay(); return MOCK_OVERVIEW; },
+  overview: async () => { await delay(); return MOCK_OVERVIEW; },
+  activity: async () => { await delay(); return MOCK_ACTIVITY; },
+  fairness: async () => { await delay(); return MOCK_FAIRNESS; },
+  leaveHistory: async () => { await delay(); return leaves; },
 
-  // public
-  branding: () => request("/branding"),
+  // branding
+  branding: async () => { await delay(); return MOCK_BRANDING; },
 
   // notifications
-  notifications: () => request("/notifications"),
-  unreadCount: () => request("/notifications/unread-count"),
-  markRead: (id) => request(`/notifications/${id}/read`, { method: "POST" }),
-  markAllRead: () => request("/notifications/read-all", { method: "POST" }),
+  notifications: async () => { await delay(); return notifications; },
+  unreadCount: async () => { await delay(); return { unread: notifications.filter((n) => !n.is_read).length }; },
+  markRead: async (id) => {
+    await delay();
+    notifications = notifications.map((n) => (n.id === id ? { ...n, is_read: true } : n));
+    return { ok: true };
+  },
+  markAllRead: async () => {
+    await delay();
+    notifications = notifications.map((n) => ({ ...n, is_read: true }));
+    return { ok: true };
+  },
 };
