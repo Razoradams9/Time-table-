@@ -11,6 +11,13 @@ const DEFAULT_BRANDING = {
   semester_label: "Even semester | 2026",
 };
 
+// The backend /me endpoint returns a Teacher with `id`; the UI expects
+// `teacher_id`. Normalize so both are always present.
+function normalizeUser(me) {
+  if (!me) return me;
+  return { ...me, teacher_id: me.teacher_id ?? me.id };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -24,11 +31,11 @@ export function AuthProvider({ children }) {
       } catch {
         /* keep defaults */
       }
-      // Mock mode: always auto-login, no backend needed.
+      // No login screen: auto-sign-in as the configured default account.
       try {
         const tok = await api.login();
         setToken(tok.access_token);
-        setUser(await api.me());
+        setUser(normalizeUser(await api.me()));
       } catch {
         /* user stays null */
       }
@@ -40,14 +47,14 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     const tok = await api.login(email, password);
     setToken(tok.access_token);
-    const me = await api.me();
+    const me = normalizeUser(await api.me());
     setUser(me);
     return me;
   }
 
   async function refreshUser() {
     try {
-      const me = await api.me();
+      const me = normalizeUser(await api.me());
       setUser(me);
       return me;
     } catch {

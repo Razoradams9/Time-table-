@@ -1,134 +1,144 @@
-// Mock API – returns static data, no backend required.
-import {
-  MOCK_BRANDING,
-  MOCK_TIME_SLOTS,
-  MOCK_TEACHERS,
-  MOCK_CLASSES,
-  MOCK_TIMETABLE_ENTRIES,
-  MOCK_SUBSTITUTIONS,
-  MOCK_LEAVES,
-  MOCK_NOTIFICATIONS,
-  MOCK_OVERVIEW,
-  MOCK_ACTIVITY,
-  MOCK_FAIRNESS,
-  MOCK_CANDIDATES,
-  MOCK_SUGGESTIONS,
-  MOCK_USER,
-} from "./mockData.js";
+// Real API client – talks to the FastAPI backend.
+//
+// In dev, requests go to "/api/..." which the Vite proxy (vite.config.js)
+// forwards to http://127.0.0.1:8010. In production set VITE_API_URL to the
+// backend's base URL (no trailing slash).
 
-// Keep these exports so existing imports don't break.
-export const API_BASE = "";
-export function apiUrl(path) { return path; }
-export function getToken() { return "mock-token"; }
-export function setToken() {}
+export const API_BASE = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
-// Small delay to simulate network feel.
-const delay = (ms = 120) => new Promise((r) => setTimeout(r, ms));
+export function apiUrl(path) {
+  return `${API_BASE}${path}`;
+}
 
-// Local mutable state so UI interactions actually work during the session.
-let notifications = [...MOCK_NOTIFICATIONS];
-let leaves = [...MOCK_LEAVES];
-let teachers = [...MOCK_TEACHERS];
-let nextLeaveId = 99;
-let nextTeacherId = 10;
+// --- token storage -------------------------------------------------------
+const TOKEN_KEY = "tt_token";
+
+export function getToken() {
+  try {
+    return localStorage.getItem(TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setToken(token) {
+  try {
+    if (token) localStorage.setItem(TOKEN_KEY, token);
+    else localStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* ignore storage errors */
+  }
+}
+
+// --- low-level request helper -------------------------------------------
+async function request(path, { method = "GET", body, form, auth = true } = {}) {
+  const headers = {};
+  if (auth) {
+    const t = getToken();
+    if (t) headers["Authorization"] = `Bearer ${t}`;
+  }
+
+  let payload;
+  if (form) {
+    // application/x-www-form-urlencoded (used by the OAuth2 login endpoint)
+    headers["Content-Type"] = "application/x-www-form-urlencoded";
+    payload = new URLSearchParams(form).toString();
+  } else if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+    payload = JSON.stringify(body);
+  }
+
+  const res = await fetch(apiUrl(path), { method, headers, body: payload });
+
+  if (!res.ok) {
+    let detail = `${res.status} ${res.statusText}`;
+    try {
+      const data = await res.json();
+      if (data && data.detail) {
+        detail = Array.isArray(data.detail)
+          ? data.detail.map((d) => d.msg || JSON.stringify(d)).join("; ")
+          : data.detail;
+      }
+    } catch {
+      /* non-JSON error body */
+    }
+    throw new Error(detail);
+  }
+
+  if (res.status === 204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+const defaultEmail = import.meta.env.VITE_DEFAULT_EMAIL || "anjana@college.edu";
+const defaultPassword = import.meta.env.VITE_DEFAULT_PASSWORD || "password123";
 
 export const api = {
-  // auth
-  login: async () => { await delay(); return { access_token: "mock-token" }; },
-  me: async () => { await delay(); return MOCK_USER; },
-  changePassword: async () => { await delay(); return { ok: true }; },
-
-  // accounts (Teachers page)
-  listAccounts: async () => { await delay(); return teachers; },
-  createAccount: async (payload) => {
-    await delay();
-    const t = { id: nextTeacherId++, ...payload, role: "TEACHER", is_active: true, temp_password: "TempPass@123" };
-    teachers = [...teachers, t];
-    return t;
-  },
-  updateAccount: async (id, payload) => {
-    await delay();
-    teachers = teachers.map((t) => (t.id === id ? { ...t, ...payload } : t));
-    return teachers.find((t) => t.id === id);
-  },
-  resetPassword: async (id) => { await delay(200); return { temp_password: "Reset@" + id + "123" }; },
-
-  // reference
-  timeSlots: async () => { await delay(); return MOCK_TIME_SLOTS; },
-  teachers: async () => { await delay(); return MOCK_TEACHERS; },
-
-  // timetable
-  activeTimetable: async () => { await delay(); return MOCK_TIMETABLE_ENTRIES; },
-  generate: async () => { await delay(800); return { success: true, version: 3, entries: MOCK_TIMETABLE_ENTRIES.length, message: "" }; },
-  approve: async () => { await delay(); return { ok: true }; },
-  versions: async () => { await delay(); return [{ version: 1 }, { version: 2 }]; },
-  viewOptions: async () => {
-    await delay();
-    return {
-      teachers: MOCK_TEACHERS.map((t) => ({ id: t.id, name: t.name, role: t.role })),
-      classes: MOCK_CLASSES,
-    };
-  },
-  teacherTimetable: async (id) => {
-    await delay();
-    return MOCK_TIMETABLE_ENTRIES.filter((e) => e.teacher_id === id);
-  },
-  classTimetable: async (id) => {
-    await delay();
-    return MOCK_TIMETABLE_ENTRIES.filter((e) => e.class_id === id);
-  },
-
-  // leaves
-  myLeaves: async () => { await delay(); return leaves; },
-  createLeave: async (payload) => {
-    await delay(400);
-    const lv = { id: nextLeaveId++, ...payload, status: "ACTIVE" };
-    leaves = [lv, ...leaves];
-    return lv;
-  },
-  cancelLeave: async (id) => {
-    await delay();
-    leaves = leaves.map((l) => (l.id === id ? { ...l, status: "CANCELLED" } : l));
-    return { ok: true };
-  },
-
-  // substitutions
-  substitutions: async () => { await delay(); return MOCK_SUBSTITUTIONS; },
-  candidates: async () => { await delay(300); return MOCK_CANDIDATES; },
-  suggestions: async () => { await delay(300); return MOCK_SUGGESTIONS; },
-  assignSub: async (subId, teacherId) => {
-    await delay(400);
-    const teacher = MOCK_TEACHERS.find((t) => t.id === teacherId);
-    MOCK_SUBSTITUTIONS.forEach((s) => {
-      if (s.id === subId) {
-        s.status = "ASSIGNED";
-        s.substitute_teacher = teacher?.name ?? "Unknown";
-      }
+  // ----- auth -----
+  login: async (email = defaultEmail, password = defaultPassword) => {
+    // Backend expects OAuth2 form fields: username (=email) + password.
+    const tok = await request("/api/auth/login", {
+      method: "POST",
+      form: { username: email, password },
+      auth: false,
     });
-    return { ok: true };
+    if (tok?.access_token) setToken(tok.access_token);
+    return tok;
   },
+  me: () => request("/api/auth/me"),
+  changePassword: (current_password, new_password) =>
+    request("/api/auth/change-password", {
+      method: "POST",
+      body: { current_password, new_password },
+    }),
 
-  // dashboard
-  summary: async () => { await delay(); return MOCK_OVERVIEW; },
-  overview: async () => { await delay(); return MOCK_OVERVIEW; },
-  activity: async () => { await delay(); return MOCK_ACTIVITY; },
-  fairness: async () => { await delay(); return MOCK_FAIRNESS; },
-  leaveHistory: async () => { await delay(); return leaves; },
+  // ----- accounts (Teachers page) -----
+  listAccounts: () => request("/api/accounts"),
+  createAccount: (payload) => request("/api/accounts", { method: "POST", body: payload }),
+  updateAccount: (id, payload) => request(`/api/accounts/${id}`, { method: "PATCH", body: payload }),
+  resetPassword: (id) => request(`/api/accounts/${id}/reset-password`, { method: "POST" }),
 
-  // branding
-  branding: async () => { await delay(); return MOCK_BRANDING; },
+  // ----- reference -----
+  timeSlots: () => request("/api/reference/time-slots"),
+  teachers: () => request("/api/reference/teachers"),
 
-  // notifications
-  notifications: async () => { await delay(); return notifications; },
-  unreadCount: async () => { await delay(); return { unread: notifications.filter((n) => !n.is_read).length }; },
-  markRead: async (id) => {
-    await delay();
-    notifications = notifications.map((n) => (n.id === id ? { ...n, is_read: true } : n));
-    return { ok: true };
-  },
-  markAllRead: async () => {
-    await delay();
-    notifications = notifications.map((n) => ({ ...n, is_read: true }));
-    return { ok: true };
-  },
+  // ----- timetable -----
+  activeTimetable: () => request("/api/timetable/active"),
+  generate: () => request("/api/timetable/generate", { method: "POST" }),
+  approve: (version) => request(`/api/timetable/approve/${version}`, { method: "POST" }),
+  versions: () => request("/api/timetable/versions"),
+  viewOptions: () => request("/api/timetable/view/options"),
+  teacherTimetable: (id) => request(`/api/timetable/view/teacher/${id}`),
+  classTimetable: (id) => request(`/api/timetable/view/class/${id}`),
+
+  // ----- leaves -----
+  myLeaves: () => request("/api/leaves"),
+  createLeave: (payload) => request("/api/leaves", { method: "POST", body: payload }),
+  cancelLeave: (id) => request(`/api/leaves/${id}`, { method: "DELETE" }),
+
+  // ----- substitutions -----
+  substitutions: (on) => request(`/api/substitutions${on ? `?on=${on}` : ""}`),
+  candidates: (subId) => request(`/api/substitutions/${subId}/candidates`),
+  suggestions: (subId) => request(`/api/substitutions/${subId}/suggestions`),
+  assignSub: (subId, teacherId) =>
+    request(`/api/substitutions/${subId}/assign`, {
+      method: "POST",
+      body: { substitute_teacher_id: teacherId },
+    }),
+
+  // ----- dashboard -----
+  summary: (on) => request(`/api/dashboard/summary${on ? `?on=${on}` : ""}`),
+  overview: (on) => request(`/api/dashboard/overview${on ? `?on=${on}` : ""}`),
+  activity: (limit = 10) => request(`/api/dashboard/activity?limit=${limit}`),
+  fairness: (start, end) => request(`/api/dashboard/fairness?start=${start}&end=${end}`),
+  leaveHistory: (teacherId) => request(`/api/dashboard/leave-history/${teacherId}`),
+
+  // ----- branding -----
+  branding: () => request("/api/branding", { auth: false }),
+
+  // ----- notifications -----
+  notifications: () => request("/api/notifications"),
+  unreadCount: () => request("/api/notifications/unread-count"),
+  markRead: (id) => request(`/api/notifications/${id}/read`, { method: "POST" }),
+  markAllRead: () => request("/api/notifications/read-all", { method: "POST" }),
 };
