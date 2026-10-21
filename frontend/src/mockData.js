@@ -11,7 +11,7 @@ export const MOCK_USER = {
 export const MOCK_BRANDING = {
   institution_name: "JGI JAIN",
   institution_subtitle: "Deemed-to-be University",
-  department_name: "Department of Computer Applications",
+  department_name: "Department of Computer Science and IT",
   product_name: "Timetable Management System",
   semester_label: "Even semester | 2026",
 };
