@@ -2,7 +2,7 @@
 
 export const MOCK_USER = {
   id: 1,
-  name: "Dr. Anjana Sharma",
+  name: "Dr. Anjana S.Chandran",
   email: "anjana@college.edu",
   role: "HOD",
   teacher_id: 1,
@@ -34,11 +34,26 @@ export const MOCK_TIME_SLOTS = Array.from({ length: DAYS * PERIODS }, (_, i) => 
 });
 
 export const MOCK_TEACHERS = [
-  { id: 1, name: "Dr. Anjana Sharma", role: "HOD", email: "anjana@college.edu", max_periods_per_day: 4, is_active: true },
-  { id: 2, name: "Prof. Ravi Kumar", role: "TEACHER", email: "ravi@college.edu", max_periods_per_day: 5, is_active: true },
-  { id: 3, name: "Ms. Priya Nair", role: "TEACHER", email: "priya@college.edu", max_periods_per_day: 5, is_active: true },
-  { id: 4, name: "Mr. Suresh Babu", role: "TEACHER", email: "suresh@college.edu", max_periods_per_day: 5, is_active: true },
-  { id: 5, name: "Dr. Meena Pillai", role: "TEACHER", email: "meena@college.edu", max_periods_per_day: 4, is_active: true },
+  { id: 1, name: "Dr. Anjana S.Chandran", role: "HOD", email: "anjana@college.edu", max_periods_per_day: 4, is_active: true },
+  { id: 2, name: "Dr. Rajeev", role: "TEACHER", email: "rajeev@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 3, name: "Dr. Hari Narayanan", role: "TEACHER", email: "hari@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 4, name: "Dr. Spurgen", role: "TEACHER", email: "spurgen@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 5, name: "Dr. Meenu", role: "TEACHER", email: "meenu@college.edu", max_periods_per_day: 4, is_active: true },
+  { id: 6, name: "Mr. Joseph", role: "TEACHER", email: "joseph@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 7, name: "Ms. Soumya", role: "TEACHER", email: "soumya@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 8, name: "Dr. Andal", role: "TEACHER", email: "andal@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 9, name: "Mr. Samiran", role: "TEACHER", email: "samiran@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 10, name: "Dr. Sruthi", role: "TEACHER", email: "sruthi@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 11, name: "Dr. Nisha", role: "TEACHER", email: "nisha@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 12, name: "Mr. Sanjay", role: "TEACHER", email: "sanjay@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 13, name: "Mr. Vipin", role: "TEACHER", email: "vipin@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 14, name: "Dr. Manivasagam", role: "TEACHER", email: "mani@college.edu", max_periods_per_day: 4, is_active: true },
+  { id: 15, name: "Ms. Devi Krishna", role: "TEACHER", email: "devikrishna@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 16, name: "Ms. Nanadana", role: "TEACHER", email: "nanadana@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 17, name: "Ms. Pretty Liju", role: "TEACHER", email: "prettyliju@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 18, name: "Anjali Nazrin", role: "TEACHER", email: "anjalinazrin@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 19, name: "Dr. Anil", role: "TEACHER", email: "anil@college.edu", max_periods_per_day: 5, is_active: true },
+  { id: 20, name: "Revathy K", role: "TEACHER", email: "revathy@college.edu", max_periods_per_day: 5, is_active: true },
 ];
 
 const SUBJECT_NAMES = ["Data Structures", "DBMS", "Operating Systems", "Networking", "Python", "Java"];
