@@ -134,11 +134,11 @@ SCHEDULE: dict[str, list[dict]] = {
     # ===== Dr. SPURGEN RATHEASH =====
     "spurgen": [
         P(MON, 0, "S5 BCA DA+Gen", "DWDM"),
-        P(MON, 3, "S1 BCA AI-B", "DA Python"),
+        P(MON, 3, "S1 BCA AI B", "DA Python"),
         P(MON, 4, "S1 MCA A", "DSA"),
         P(MON, 6, "S3 BCA CS", "CN"),
         P(MON, 7, "S3 BCA CS", "CN"),
-        P(TUE, 0, "S1 BCA AI-B", "DA Python Lab", lab="ADMIN", double=True),
+        P(TUE, 0, "S1 BCA AI B", "DA Python Lab", lab="ADMIN", double=True),
         P(TUE, 6, "S3 BCA CS", "CN"),
         P(TUE, 7, "S3 BCA CS", "CN"),
         P(WED, 0, "S5 BCA DA+Gen", "DWDM"),
@@ -147,9 +147,9 @@ SCHEDULE: dict[str, list[dict]] = {
         P(WED, 6, "S1 MCA A", "DSA Lab", lab="DIGI", double=True),
         P(THU, 4, "S1 MCA A", "DSA"),
         P(FRI, 1, "S5 BCA DA+Gen", "DWDM"),
-        P(FRI, 3, "S1 BCA AI-B", "DA Python"),
+        P(FRI, 3, "S1 BCA AI B", "DA Python"),
         P(FRI, 4, "S1 MCA A", "DSA Lab"),
-        P(SAT, 0, "S1 BCA AI-B", "DA Python"),
+        P(SAT, 0, "S1 BCA AI B", "DA Python"),
         P(SAT, 3, "S1 MCA A", "DSA"),
     ],
     # ===== Dr. MEENU SURESH =====
@@ -187,37 +187,37 @@ SCHEDULE: dict[str, list[dict]] = {
     ],
     # ===== Ms. SOUMYA K =====
     "soumya": [
-        P(MON, 0, "S1 BCA AI-A", "AI Digital Lab", lab="ADMIN", double=True),
+        P(MON, 0, "S1 BCA AI A", "AI Digital Lab", lab="ADMIN", double=True),
         # Mon P6 "S3 BCA AI Python Joseph & Soumya" co-taught lab -> on Joseph (primary).
-        P(TUE, 0, "S1 BCA AI-A", "AI Digital"),
+        P(TUE, 0, "S1 BCA AI A", "AI Digital"),
         # Tue DBMS Lab (co-taught with Joseph) -> on Joseph (primary).
         P(TUE, 6, "S3 BCA AI", "DBMS"),
         P(WED, 0, "S5 BCA CS", "Crypto"),
         P(WED, 6, "S3 BCA DA", "OS"),
-        P(THU, 0, "S1 BCA AI-A", "AI Digital"),
+        P(THU, 0, "S1 BCA AI A", "AI Digital"),
         P(THU, 2, "S5 BCA CS", "Crypto"),    # moved c1->c2 (Andal Pentest owns Thu c1); item 8
         P(THU, 6, "S3 BCA DA", "OS"),        # moved c5->c6 (Hari Python owns Thu c5); item 6
         P(FRI, 1, "S5 BCA CS", "Crypto"),
         P(FRI, 4, "S3 BCA AI", "DBMS"),
         P(FRI, 5, "S3 BCA DA", "OS"),
-        P(SAT, 0, "S1 BCA AI-A", "AI Digital"),
+        P(SAT, 0, "S1 BCA AI A", "AI Digital"),
         P(SAT, 4, "S3 BCA AI", "DBMS"),
     ],
     # ===== Dr. ANDAL V =====
     "andal": [
         P(MON, 1, "S5 BCA CS", "Pentest Lab", lab="DIGI", double=True),
-        P(MON, 3, "S1 BCA CS-A", "Python Lab", lab="DIGITAL", double=True),
+        P(MON, 3, "S1 BCA CS A", "Python Lab", lab="DIGITAL", double=True),
         P(MON, 7, "S1 MCA A", "AI"),
         P(TUE, 1, "S5 BCA CS", "Pentest"),
-        P(WED, 0, "S1 BCA CS-B", "Python Lab", lab="DIGI", double=True),
+        P(WED, 0, "S1 BCA CS B", "Python Lab", lab="DIGI", double=True),
         P(THU, 1, "S5 BCA CS", "Pentest"),
-        P(THU, 2, "S1 BCA CS-A", "Python Theory"),
+        P(THU, 2, "S1 BCA CS A", "Python Theory"),
         P(THU, 5, "S1 MCA A", "AI"),
-        P(FRI, 3, "S1 BCA CS-A", "Python Theory"),
-        P(FRI, 4, "S1 BCA CS-B", "Python Theory"),
+        P(FRI, 3, "S1 BCA CS A", "Python Theory"),
+        P(FRI, 4, "S1 BCA CS B", "Python Theory"),
         P(SAT, 1, "S5 BCA CS", "Pentest"),
-        P(SAT, 2, "S1 BCA CS-A", "Python Theory"),
-        P(SAT, 0, "S1 BCA CS-A", "Python Theory"),  # moved c3->c0 (Sruthi Digital owns Sat c3); item 16
+        P(SAT, 2, "S1 BCA CS A", "Python Theory"),
+        P(SAT, 0, "S1 BCA CS A", "Python Theory"),  # moved c3->c0 (Sruthi Digital owns Sat c3); item 16
         P(SAT, 4, "S1 MCA A", "AI"),
     ],
     # ===== Mr. SAMEERAN =====
@@ -240,21 +240,21 @@ SCHEDULE: dict[str, list[dict]] = {
     ],
     # ===== Dr. SRUTHI =====
     "sruthi": [
-        P(MON, 0, "S1 BCA AI-B", "Digital Lab", lab="ADMIN", double=True),
+        P(MON, 0, "S1 BCA AI B", "Digital Lab", lab="ADMIN", double=True),
         P(MON, 2, "S3 BCA CS", "DSM"),
         P(MON, 4, "S3 BCA AI", "OS"),        # moved c5->c4 (Sameeran CN owns Mon c5); item 14
         P(THU, 6, "S3 BCA CS", "OS"),        # moved Mon c6->Thu c6 (Spurgen CN owns Mon c6); item 15
-        P(TUE, 0, "S1 BCA CS-A", "Digital Lab", lab="DIGI", double=True),
-        P(WED, 3, "S1 BCA AI-B", "Digital"),
+        P(TUE, 0, "S1 BCA CS A", "Digital Lab", lab="DIGI", double=True),
+        P(WED, 3, "S1 BCA AI B", "Digital"),
         P(WED, 6, "S3 BCA CS", "OS"),
         P(WED, 7, "S3 BCA AI", "OS"),
-        P(THU, 0, "S1 BCA CS-A", "Digital"),
+        P(THU, 0, "S1 BCA CS A", "Digital"),
         P(THU, 5, "S3 BCA CS", "OS"),
-        P(FRI, 0, "S1 BCA AI-B", "Digital"),
-        P(FRI, 2, "S1 BCA CS-B", "DSM"),
+        P(FRI, 0, "S1 BCA AI B", "Digital"),
+        P(FRI, 2, "S1 BCA CS B", "DSM"),
         P(FRI, 5, "S3 BCA AI", "OS"),
-        P(SAT, 3, "S1 BCA CS-A", "Digital"),
-        P(SAT, 4, "S1 BCA AI-B", "Digital"),
+        P(SAT, 3, "S1 BCA CS A", "Digital"),
+        P(SAT, 4, "S1 BCA AI B", "Digital"),
     ],
     # ===== Dr. NISHA =====
     "nisha": [
@@ -263,11 +263,11 @@ SCHEDULE: dict[str, list[dict]] = {
         P(MON, 5, "S1 MCA B", "DSA"),
         P(TUE, 2, "S5 BCA AI", "NLP"),
         P(TUE, 4, "S3 BCA DA", "DBMS"),
-        P(WED, 2, "S1 BCA AI-B", "DSM"),
+        P(WED, 2, "S1 BCA AI B", "DSM"),
         P(WED, 4, "S3 BCA DA", "DBMS Lab", lab="ADMIN", double=True),
-        P(THU, 1, "S1 BCA AI-A", "DSM"),
+        P(THU, 1, "S1 BCA AI A", "DSM"),
         P(FRI, 1, "S5 BCA AI", "NLP"),
-        P(FRI, 2, "S1 BCA AI-B", "DSM"),     # moved c3->c2 (Spurgen DA Python owns Fri c3); item 18
+        P(FRI, 2, "S1 BCA AI B", "DSM"),     # moved c3->c2 (Spurgen DA Python owns Fri c3); item 18
         P(FRI, 4, "S1 MCA B", "DSA"),
         P(FRI, 5, "S1 MCA B", "DSA Lab", lab="ADMIN", double=True),
         P(SAT, 3, "S1 MCA B", "DSA Lab", lab="ADMIN", double=True),
@@ -277,18 +277,18 @@ SCHEDULE: dict[str, list[dict]] = {
     # ===== Mr. SANJAY =====
     "sanjay": [
         P(MON, 0, "S1 B.Sc CSIT", "Digital"),
-        P(MON, 1, "S1 BCA CS-B", "Digital"),
+        P(MON, 1, "S1 BCA CS B", "Digital"),
         P(MON, 4, "S5 BCA DA+Gen", "CLDA"),
         P(WED, 4, "S1 MCA B", "AI"),         # moved Mon c5->Wed c4 (Nisha DSA owns Mon c5); item 19b
         P(TUE, 0, "S5 BCA DA+Gen", "CLDA"),
-        P(TUE, 1, "S1 BCA CS-B", "Digital"),
+        P(TUE, 1, "S1 BCA CS B", "Digital"),
         P(TUE, 5, "S1 MCA B", "AI"),
         P(WED, 1, "S5 BCA DA+Gen", "CLDA"),  # moved c2->c1 (Spurgen DWDM Lab owns Wed c2-c3); item 21
-        P(THU, 0, "S1 BCA CS-B", "Digital Lab"),
+        P(THU, 0, "S1 BCA CS B", "Digital Lab"),
         P(THU, 3, "S1 B.Sc CSIT", "Digital Lab", lab="ADMIN", double=True),
         P(THU, 7, "S1 MCA B", "AI"),         # moved c4->c7 (own Digital Lab double owns Thu c3-c4, Mani lab Thu c5-c6); item 22
         P(FRI, 0, "S1 B.Sc CSIT", "Digital"),
-        P(SAT, 0, "S1 BCA CS-B", "Digital"),
+        P(SAT, 0, "S1 BCA CS B", "Digital"),
         P(SAT, 2, "S1 B.Sc CSIT", "Digital"),
     ],
     # ===== Mr. VIPIN =====
