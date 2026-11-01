@@ -6,7 +6,13 @@ const DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 //   mode    : "class"  -> cells emphasize teacher (who teaches this stream)
 //             "teacher"-> cells emphasize class (where the teacher goes)
 //             "master" -> cells show teacher + class
-export default function TimetableGrid({ entries, slots, mode = "master" }) {
+//   subsByCell : optional map `${day}_${period_index}` -> SubstitutionDetail.
+//                When present, a matching cell is rendered in "adjusted" form:
+//                the substitute teacher replaces the absent one (or the cell is
+//                flagged uncovered). Used by the Timetable page's Adjusted view.
+//   viewTeacherId : when set (teacher/adjusted view), used to decide whether a
+//                substitution is relevant to the teacher being viewed.
+export default function TimetableGrid({ entries, slots, mode = "master", subsByCell = null, viewTeacherId = null }) {
   // Distinct days present, sorted.
   const days = [...new Set(slots.map((s) => s.day_of_week))].sort((a, b) => a - b);
 
@@ -46,9 +52,11 @@ export default function TimetableGrid({ entries, slots, mode = "master" }) {
             time={timeByPeriod[p]}
             days={days}
             cells={days.map((d) => cellMap[`${d}_${p}`])}
+            subCells={days.map((d) => (subsByCell ? subsByCell[`${d}_${p}`] : null))}
             preferred={preferredByPeriod[p]}
             mode={mode}
             breakAfter={isBreakAfter(i)}
+            viewTeacherId={viewTeacherId}
           />
         ))}
       </div>
@@ -56,7 +64,7 @@ export default function TimetableGrid({ entries, slots, mode = "master" }) {
   );
 }
 
-function Row({ label, time, days, cells, preferred, mode, breakAfter }) {
+function Row({ label, time, days, cells, subCells, preferred, mode, breakAfter, viewTeacherId }) {
   return (
     <>
       <div className={"tt-time" + (breakAfter ? " break-after" : "")}>
@@ -64,24 +72,53 @@ function Row({ label, time, days, cells, preferred, mode, breakAfter }) {
         <span className="tt-ptime">{time}</span>
       </div>
       {cells.map((e, idx) => {
+        const sub = subCells ? subCells[idx] : null;
+        const uncovered = sub && !sub.substitute_teacher;
+        const covered = sub && sub.substitute_teacher;
         const cls =
           "tt-cell" +
           (e ? " filled" : "") +
           (e?.is_double ? " lab" : "") +
           (preferred ? " preferred" : "") +
-          (breakAfter ? " break-after" : "");
+          (breakAfter ? " break-after" : "") +
+          (covered ? " sub-covered" : "") +
+          (uncovered ? " sub-uncovered" : "");
         if (!e) return <div className={cls} key={idx} />;
+        // In adjusted mode, if this cell has a substitution the displayed
+        // teacher is the substitute; the original (absent) teacher is shown
+        // struck below so both schedules are visible at once.
         return (
           <div className={cls} key={idx}>
             <div className="subj">
               {e.subject.name}
               {e.is_double && <span className="lab-tag">LAB</span>}
+              {sub && (
+                <span className={"sub-tag " + (uncovered ? "red" : "")}>
+                  {uncovered ? "UNCOVERED" : "SUB"}
+                </span>
+              )}
             </div>
             {mode !== "class" && <div className="meta">{e.class_section.name}</div>}
             {mode !== "teacher" && (
               <div className="meta">
-                {e.teacher.name}
-                {e.co_teacher ? ` & ${e.co_teacher.name}` : ""}
+                {covered ? (
+                  <>
+                    <span className="sub-new">{sub.substitute_teacher}</span>
+                    <span className="sub-old">was {e.teacher.name}</span>
+                  </>
+                ) : (
+                  <>
+                    {e.teacher.name}
+                    {e.co_teacher ? ` & ${e.co_teacher.name}` : ""}
+                    {uncovered && <span className="sub-old">absent — no cover</span>}
+                  </>
+                )}
+              </div>
+            )}
+            {/* Teacher-view adjusted cell: show who is covering / that it's a sub */}
+            {mode === "teacher" && covered && (
+              <div className="meta">
+                <span className="sub-new">{sub.substitute_teacher}</span>
               </div>
             )}
             <div className="meta room">{e.room.name}</div>

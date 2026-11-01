@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     # Branding / institution labels shown in the UI
     institution_name: str = "JGI JAIN"
     institution_subtitle: str = "Deemed-to-be University"
-    department_name: str = "Department of Computer Applications"
+    department_name: str = "Department of Computer Science and IT"
     product_name: str = "Timetable Management System"
     semester_label: str = "Even semester | 2026"
 

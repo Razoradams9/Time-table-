@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Substitutions from "./pages/Substitutions.jsx";
 import Fairness from "./pages/Fairness.jsx";
 import Teachers from "./pages/Teachers.jsx";
+import Help from "./pages/Help.jsx";
 
 function Protected({ children, hodOnly }) {
   const { user } = useAuth();
@@ -47,6 +48,7 @@ export default function App() {
         <Route path="/my-timetable" element={<MyTimetable />} />
         <Route path="/leaves" element={<Leaves />} />
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/help" element={<Help />} />
         <Route
           path="/teachers"
           element={

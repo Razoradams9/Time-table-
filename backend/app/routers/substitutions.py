@@ -40,11 +40,16 @@ def to_detail(sub: Substitution) -> SubstitutionDetail:
         explanation=sub.explanation,
         period=f"P{entry.time_slot.period_index + 1} ({entry.time_slot.start_time}-{entry.time_slot.end_time})",
         day_of_week=entry.time_slot.day_of_week,
+        period_index=entry.time_slot.period_index,
+        time_slot_id=entry.time_slot_id,
         subject=entry.subject.name,
         class_section=entry.class_section.name,
+        class_section_id=entry.class_section_id,
         room=entry.room.name,
         absent_teacher=sub.absent_teacher.name,
+        absent_teacher_id=sub.absent_teacher_id,
         substitute_teacher=sub.substitute_teacher.name if sub.substitute_teacher else None,
+        substitute_teacher_id=sub.substitute_teacher_id,
     )
 
 

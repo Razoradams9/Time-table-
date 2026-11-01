@@ -55,13 +55,8 @@ export default function Layout() {
     { to: "/notifications", icon: "messages", label: "Messages" },
     { to: "/fairness", icon: "reports", label: "Reports", hod: true },
   ];
-  const soonNav = [
-    { to: "/classes", icon: "classes", label: "Classes", hod: true, soon: true },
-    { to: "/subjects", icon: "subjects", label: "Subjects", hod: true, soon: true },
-    { to: "/attendance", icon: "attendance", label: "Attendance", soon: true },
-  ];
   const bottomNav = [
-    { to: "/help", icon: "help", label: "Help & Support", soon: true },
+    { to: "/help", icon: "help", label: "Help & Support" },
   ];
 
   const renderLink = (item) => {
@@ -130,8 +125,6 @@ export default function Layout() {
         <aside className={"sidebar" + (mobileOpen ? " open" : "")}>
           <nav className="side-nav" aria-label="Main">
             {liveNav.map(renderLink)}
-            <div className="side-group">Coming soon</div>
-            {soonNav.map(renderLink)}
           </nav>
           <div className="side-nav side-bottom">{bottomNav.map(renderLink)}</div>
         </aside>

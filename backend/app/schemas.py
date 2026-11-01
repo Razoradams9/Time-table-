@@ -182,11 +182,16 @@ class SubstitutionDetail(BaseModel):
     explanation: str | None
     period: str
     day_of_week: int
+    period_index: int
+    time_slot_id: int
     subject: str
     class_section: str
+    class_section_id: int
     room: str
     absent_teacher: str
+    absent_teacher_id: int
     substitute_teacher: str | None
+    substitute_teacher_id: int | None
 
 
 class ManualAssignRequest(BaseModel):
