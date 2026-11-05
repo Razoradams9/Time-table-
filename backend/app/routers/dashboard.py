@@ -5,10 +5,10 @@ import csv
 import io
 from datetime import date
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 from sqlalchemy import func, select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from app.database import get_db
 from app.models import (
@@ -19,6 +19,7 @@ from app.models import (
     Substitution,
     SubstitutionStatus,
     Teacher,
+    TimetableEntry,
 )
 from app.schemas import (
     ActivityItem,
@@ -26,8 +27,12 @@ from app.schemas import (
     FairnessRow,
     LeaveHistoryRow,
     OverviewStats,
+    WorkloadDay,
+    WorkloadReport,
+    WorkloadRow,
 )
-from app.security import require_hod
+from app.security import get_current_teacher, require_hod
+from app.services.schedule_utils import iter_teaching_dates, round_hours, slot_minutes, week_bounds
 from app.routers.substitutions import to_detail
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
@@ -133,6 +138,117 @@ def summary(on: date | None = None, db: Session = Depends(get_db), hod: Teacher 
 @router.get("/fairness", response_model=list[FairnessRow])
 def fairness(start: date, end: date, db: Session = Depends(get_db), hod: Teacher = Depends(require_hod)):
     return _fairness_rows(db, start, end)
+
+
+_DAY_NAMES = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+_WORKLOAD_FORMULA = (
+    "Net hours = scheduled hours in range - hours given up (substituted by others) "
+    "- uncovered hours + hours substituted for others"
+)
+
+
+@router.get("/workload", response_model=WorkloadReport)
+def workload(
+    start: date | None = None,
+    end: date | None = None,
+    teacher_id: int | None = None,
+    db: Session = Depends(get_db),
+    current: Teacher = Depends(get_current_teacher),
+):
+    if current.role != Role.HOD:
+        if teacher_id is not None and teacher_id != current.id:
+            raise HTTPException(status_code=403, detail="You can only view your own workload")
+        teacher_id = current.id
+    wk_start, wk_end = week_bounds(date.today())
+    start = start or wk_start
+    end = end or wk_end
+    if start > end:
+        raise HTTPException(status_code=400, detail="start must be on or before end")
+    if (end - start).days > 366:
+        raise HTTPException(status_code=400, detail="Range cannot exceed 366 days")
+
+    q = select(Teacher).where(Teacher.is_active.is_(True)).order_by(Teacher.id)
+    if teacher_id is not None:
+        q = q.where(Teacher.id == teacher_id)
+    teachers = db.scalars(q).all()
+
+    entries = db.scalars(
+        select(TimetableEntry)
+        .options(joinedload(TimetableEntry.time_slot))
+        .where(TimetableEntry.is_active.is_(True))
+    ).all()
+    # teacher -> weekday -> [periods, minutes]
+    sched: dict[int, list[list[int]]] = {}
+    for e in entries:
+        mins = slot_minutes(e.time_slot)
+        for tid in {e.teacher_id, e.co_teacher_id}:
+            if tid is None:
+                continue
+            days = sched.setdefault(tid, [[0, 0] for _ in range(6)])
+            dow = e.time_slot.day_of_week
+            if 0 <= dow <= 5:
+                days[dow][0] += 1
+                days[dow][1] += mins
+
+    dates = list(iter_teaching_dates(start, end))
+    date_counts = [0] * 6
+    for d in dates:
+        date_counts[d.weekday()] += 1
+
+    subs = db.scalars(
+        select(Substitution)
+        .options(joinedload(Substitution.timetable_entry).joinedload(TimetableEntry.time_slot))
+        .where(Substitution.override_date >= start, Substitution.override_date <= end)
+    ).all()
+    sub_in: dict[int, list[int]] = {}   # substitute -> [periods, minutes]
+    given: dict[int, list[int]] = {}    # absent -> [periods, minutes]
+    uncov: dict[int, int] = {}          # absent -> minutes
+    for s in subs:
+        mins = slot_minutes(s.timetable_entry.time_slot)
+        if s.status == SubstitutionStatus.ASSIGNED:
+            if s.substitute_teacher_id is not None:
+                a = sub_in.setdefault(s.substitute_teacher_id, [0, 0])
+                a[0] += 1
+                a[1] += mins
+            g = given.setdefault(s.absent_teacher_id, [0, 0])
+            g[0] += 1
+            g[1] += mins
+        elif s.status == SubstitutionStatus.UNCOVERED:
+            uncov[s.absent_teacher_id] = uncov.get(s.absent_teacher_id, 0) + mins
+
+    rows: list[WorkloadRow] = []
+    for t in teachers:
+        days = sched.get(t.id, [[0, 0] for _ in range(6)])
+        week_min = sum(m for _, m in days)
+        in_range = sum(days[i][1] * date_counts[i] for i in range(6))
+        si = sub_in.get(t.id, [0, 0])
+        gv = given.get(t.id, [0, 0])
+        un = uncov.get(t.id, 0)
+        rows.append(
+            WorkloadRow(
+                teacher_id=t.id,
+                name=t.name,
+                role=t.role,
+                scheduled_periods_per_week=sum(p for p, _ in days),
+                scheduled_hours_per_week=round_hours(week_min),
+                scheduled_hours_in_range=round_hours(in_range),
+                hours_substituted_for_others=round_hours(si[1]),
+                periods_substituted_for_others=si[0],
+                hours_given_up=round_hours(gv[1]),
+                periods_given_up=gv[0],
+                uncovered_hours=round_hours(un),
+                net_hours_in_range=round_hours(in_range - gv[1] - un + si[1]),
+                daily=[
+                    WorkloadDay(
+                        day_of_week=i, day_name=_DAY_NAMES[i], periods=days[i][0], hours=round_hours(days[i][1])
+                    )
+                    for i in range(6)
+                ],
+            )
+        )
+    return WorkloadReport(
+        start=start, end=end, teaching_days=len(dates), formula=_WORKLOAD_FORMULA, rows=rows
+    )
 
 
 @router.get("/leave-history/{teacher_id}", response_model=list[LeaveHistoryRow])

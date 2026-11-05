@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { api, getToken, apiUrl } from "../api";
 import PageHeader from "../components/PageHeader.jsx";
+import WorkloadPanel from "../components/WorkloadPanel.jsx";
 
 function weekAgo() {
   const d = new Date();
@@ -14,6 +15,7 @@ export default function Fairness() {
   const [rows, setRows] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [err, setErr] = useState("");
+  const [tab, setTab] = useState("fairness");
 
   async function run() {
     setErr("");
@@ -51,8 +53,18 @@ export default function Fairness() {
       <PageHeader
         badge="Balance"
         title="Fairness report"
-        subtitle="See how substitution load is distributed across teachers, and export it."
+        subtitle="See how substitution load and teaching hours are distributed across teachers, and export it."
       />
+      <div className="seg" style={{ marginBottom: 16 }}>
+        <button className={"seg-btn" + (tab === "fairness" ? " active" : "")} onClick={() => setTab("fairness")}>
+          Fairness
+        </button>
+        <button className={"seg-btn" + (tab === "workload" ? " active" : "")} onClick={() => setTab("workload")}>
+          Workload
+        </button>
+      </div>
+      {tab === "workload" && <WorkloadPanel />}
+      {tab === "fairness" && (
       <div className="card">
       <div className="row">
         <div className="col">
@@ -110,6 +122,7 @@ export default function Fairness() {
         </table>
       )}
       </div>
+      )}
     </>
   );
 }

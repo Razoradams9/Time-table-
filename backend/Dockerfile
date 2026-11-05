@@ -19,5 +19,5 @@ COPY . .
 
 EXPOSE 8080
 
-# Fly sets PORT; default to 8080. One worker keeps OR-Tools memory predictable.
-CMD ["sh", "-c", "uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+# Seed the DB on first boot (idempotent), then start the server.
+CMD ["sh", "-c", "python seed_once.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8080} --workers 1"]

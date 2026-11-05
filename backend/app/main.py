@@ -11,6 +11,8 @@ from app.database import Base, engine
 from app.routers import (
     accounts,
     auth,
+    compensations,
+    courses,
     dashboard,
     leaves,
     notifications,
@@ -20,6 +22,8 @@ from app.routers import (
 )
 
 logging.basicConfig(level=logging.INFO)
+
+_DEFAULT_SECRET = "change-me-in-production-please-use-a-long-random-string"
 
 app = FastAPI(title=settings.app_name, version="1.0.0")
 
@@ -38,6 +42,10 @@ app.add_middleware(
 def on_startup() -> None:
     # Create tables if they don't exist. (For real deployments use migrations.)
     Base.metadata.create_all(bind=engine)
+    if settings.secret_key == _DEFAULT_SECRET:
+        logging.getLogger(__name__).warning(
+            "SECRET_KEY is still the insecure default; set SECRET_KEY in backend/.env before deploying"
+        )
 
 
 @app.get("/api/health")
@@ -64,3 +72,5 @@ app.include_router(leaves.router)
 app.include_router(substitutions.router)
 app.include_router(dashboard.router)
 app.include_router(notifications.router)
+app.include_router(courses.router)
+app.include_router(compensations.router)

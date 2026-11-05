@@ -26,6 +26,7 @@ export default function TimetableViews() {
   const [adjDate, setAdjDate] = useState(todayStr);
   const [adjSubject, setAdjSubject] = useState("teacher"); // adjusted grid viewed by teacher or class
   const [subs, setSubs] = useState([]);
+  const [makeups, setMakeups] = useState([]); // make-up classes held on adjDate
 
   // In adjusted mode we reuse the teacher/class pickers depending on adjSubject.
   const effectiveMode = mode === "adjusted" ? adjSubject : mode;
@@ -87,10 +88,12 @@ export default function TimetableViews() {
         const gridP =
           effectiveMode === "teacher" ? api.teacherTimetable(id) : api.classTimetable(id);
         const subsP = mode === "adjusted" ? api.substitutions(adjDate) : Promise.resolve([]);
-        const [data, subData] = await Promise.all([gridP, subsP]);
+        const makeupP = mode === "adjusted" ? api.compensationCalendar(adjDate) : Promise.resolve([]);
+        const [data, subData, makeupData] = await Promise.all([gridP, subsP, makeupP]);
         if (!alive) return;
         setEntries(data);
         setSubs(subData);
+        setMakeups(makeupData);
       } catch (ex) {
         if (alive) setErr(ex.message);
       } finally {
@@ -124,18 +127,26 @@ export default function TimetableViews() {
     return map;
   }, [mode, subs, adjSubject, teacherId, classId]);
 
+  const makeupsForView = useMemo(() => {
+    if (mode !== "adjusted") return [];
+    return makeups.filter((m) =>
+      adjSubject === "teacher" ? m.teacher_id === teacherId : m.class_section_id === classId
+    );
+  }, [mode, makeups, adjSubject, teacherId, classId]);
+
   // In the adjusted TEACHER view, a substitute's picked-up periods aren't on
   // their own base grid. Synthesize entries for those so the covering teacher
   // sees the extra duty slotted into their week.
   const gridEntries = useMemo(() => {
-    if (mode !== "adjusted" || adjSubject !== "teacher") return entries;
+    if (mode !== "adjusted") return entries;
     const have = new Set(entries.map((e) => `${e.time_slot.day_of_week}_${e.time_slot.period_index}`));
     const extra = [];
-    for (const s of subs) {
+    for (const s of adjSubject === "teacher" ? subs : []) {
       if (s.status === "CANCELLED") continue;
       if (s.substitute_teacher_id !== teacherId) continue;
       const key = `${s.day_of_week}_${s.period_index}`;
       if (have.has(key)) continue; // real clash handled elsewhere; don't overwrite
+      have.add(key);
       extra.push({
         id: `sub-${s.id}`,
         is_double: false,
@@ -147,10 +158,31 @@ export default function TimetableViews() {
         room: { name: s.room },
       });
     }
+    // Make-up classes on this date for the viewed teacher / class (read-only overlay).
+    for (const m of makeupsForView) {
+      m.period_indexes.forEach((pi, n) => {
+        const key = `${m.day_of_week}_${pi}`;
+        if (have.has(key)) return; // never overwrite an occupied cell
+        have.add(key);
+        extra.push({
+          id: `mk-${m.id}-${n}`,
+          is_makeup: true,
+          makeup_status: m.status,
+          is_double: m.periods === 2,
+          time_slot: { day_of_week: m.day_of_week, period_index: pi },
+          subject: { name: m.subject },
+          class_section: { name: m.class_section },
+          teacher: { name: m.teacher },
+          co_teacher: null,
+          room: { name: m.room || "Room TBD" },
+        });
+      });
+    }
     return extra.length ? [...entries, ...extra] : entries;
-  }, [mode, adjSubject, entries, subs, teacherId]);
+  }, [mode, adjSubject, entries, subs, teacherId, makeupsForView]);
 
   const adjCount = subsByCell ? Object.keys(subsByCell).length : 0;
+  const makeupCount = makeupsForView.reduce((n, m) => n + m.periods, 0);
 
   // Load summary: count periods + free slots for the "exhaustion" readout.
   const totalSlots = useMemo(
@@ -256,10 +288,13 @@ export default function TimetableViews() {
 
           {mode === "adjusted" && (
             <div className="load-readout">
-              {adjCount > 0 ? (
-                <span className="pill amber">{adjCount} substitution{adjCount > 1 ? "s" : ""} on this day</span>
+              {adjCount > 0 || makeupCount > 0 ? (
+                <span className="pill amber">
+                  {adjCount} substitution{adjCount === 1 ? "" : "s"}, {makeupCount} make-up
+                  {makeupCount === 1 ? "" : "s"}
+                </span>
               ) : (
-                <span className="pill gray">No substitutions on this day</span>
+                <span className="pill gray">No substitutions or make-ups on this day</span>
               )}
             </div>
           )}

@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useState } from "react";
-import { api, setToken } from "./api";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { api, getToken, setToken } from "./api";
 
 export const AuthCtx = createContext(null);
 
@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [branding, setBranding] = useState(DEFAULT_BRANDING);
+  const [sessionMessage, setSessionMessage] = useState("");
 
   useEffect(() => {
     async function boot() {
@@ -31,22 +32,32 @@ export function AuthProvider({ children }) {
       } catch {
         /* keep defaults */
       }
-      // No login screen: auto-sign-in as the configured default account.
-      try {
-        const tok = await api.login();
-        setToken(tok.access_token);
-        setUser(normalizeUser(await api.me()));
-      } catch {
-        /* user stays null */
+      // Restore a saved session only; otherwise the Login page is shown.
+      if (getToken()) {
+        try {
+          setUser(normalizeUser(await api.me()));
+        } catch {
+          setToken(null);
+        }
       }
       setLoading(false);
     }
     boot();
   }, []);
 
+  // api.js fires this when an authenticated call comes back 401.
+  useEffect(() => {
+    function onUnauthorized() {
+      setUser(null);
+      setSessionMessage("Your session has expired. Please sign in again.");
+    }
+    window.addEventListener("tt:unauthorized", onUnauthorized);
+    return () => window.removeEventListener("tt:unauthorized", onUnauthorized);
+  }, []);
+
   async function login(email, password) {
-    const tok = await api.login(email, password);
-    setToken(tok.access_token);
+    setSessionMessage("");
+    await api.login(email, password);
     const me = normalizeUser(await api.me());
     setUser(me);
     return me;
@@ -65,10 +76,15 @@ export function AuthProvider({ children }) {
   function logout() {
     setToken(null);
     setUser(null);
+    setSessionMessage("");
   }
 
+  const clearSessionMessage = useCallback(() => setSessionMessage(""), []);
+
   return (
-    <AuthCtx.Provider value={{ user, loading, login, logout, branding, refreshUser }}>
+    <AuthCtx.Provider
+      value={{ user, loading, login, logout, branding, refreshUser, sessionMessage, clearSessionMessage }}
+    >
       {children}
     </AuthCtx.Provider>
   );

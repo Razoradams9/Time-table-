@@ -115,6 +115,11 @@ def _busy_slots_from_subs(db: Session, d: date) -> dict[int, set[int]]:
     for s in subs:
         entry = s.timetable_entry
         result.setdefault(s.substitute_teacher_id, set()).add(entry.time_slot_id)
+    # PROPOSED/SCHEDULED make-up classes also occupy the teacher.
+    from app.services.compensation import active_comp_slots  # lazy: avoids circular import
+
+    for tid, slots in active_comp_slots(db, d).items():
+        result.setdefault(tid, set()).update(slots)
     return result
 
 

@@ -1751,3 +1751,140 @@ a.stat-tile:hover {
   text-decoration: line-through;
   margin-top: 1px;
 }
+
+/* ---- Workload ---- */
+.wl-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 16px;
+}
+.wl-nav { display: flex; flex-wrap: wrap; gap: 8px; }
+.wl-table td, .wl-table th { white-space: nowrap; }
+.wl-sub { font-size: 11px; color: var(--color-slate-gray); }
+.wl-total td {
+  font-weight: 700;
+  border-top: 2px solid var(--color-pebble);
+  color: var(--color-ink-navy);
+}
+.wl-help {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--color-slate-gray);
+}
+.wl-days {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 28px;
+  min-width: 60px;
+}
+.wl-day {
+  flex: 1;
+  background: var(--color-signal-blue);
+  border-radius: 2px 2px 0 0;
+  min-height: 2px;
+}
+.my-hours .mh-big {
+  font-size: 34px;
+  font-weight: 700;
+  color: var(--color-ink-navy);
+  line-height: 1.1;
+}
+.my-hours .mh-big span { font-size: 14px; font-weight: 500; color: var(--color-slate-gray); }
+.my-hours .mh-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 12px 0;
+}
+.my-hours .mh-num { font-size: 18px; font-weight: 700; color: var(--color-ink-navy); }
+.my-hours .mh-lbl { font-size: 11px; color: var(--color-slate-gray); }
+.my-hours .wl-days { height: 44px; }
+.my-hours .wl-day { background: var(--color-orange); }
+.mh-daynames {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--color-slate-gray);
+}
+.mh-daynames span { flex: 1; text-align: center; }
+@media (max-width: 640px) {
+  .wl-controls { flex-direction: column; align-items: stretch; }
+  .wl-nav button { flex: 1; }
+  .my-hours .mh-big { font-size: 28px; }
+}
+
+/* ---- Courses ---- */
+.courses-toolbar { display: flex; gap: 12px; align-items: center; margin-bottom: 18px; }
+.courses-toolbar input { flex: 1; min-width: 0; }
+.courses-toolbar select { min-width: 200px; }
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 18px;
+}
+.courses-grid .card { min-width: 0; }
+.course-row { padding: 10px 0; border-top: 1px solid var(--color-pebble); overflow-wrap: anywhere; }
+.course-title { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.course-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.course-chip {
+  background: var(--color-pebble);
+  color: var(--color-ink-navy);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12px;
+}
+@media (max-width: 640px) {
+  .courses-grid { grid-template-columns: 1fr; }
+  .courses-toolbar { flex-direction: column; align-items: stretch; }
+  .courses-toolbar select { min-width: 0; }
+}
+/* ---- Compensations ---- */
+.comp-toolbar { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+.comp-toolbar select { min-width: 200px; }
+.comp-table td { vertical-align: top; }
+.comp-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.comp-err { margin: 6px 0 0; padding: 6px 10px; font-size: 13px; }
+.comp-sub-row td { background: #f6f8fb; }
+.comp-sugs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.comp-sugs li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  background: var(--color-paper);
+  border: 1px solid var(--color-pebble);
+  border-radius: 8px;
+}
+/* Make-up cells in the Adjusted timetable */
+.tt-cell.makeup {
+  background: #e3f1f8;
+  box-shadow: inset 3px 0 0 var(--color-signal-blue);
+}
+.tt-cell.makeup.proposed {
+  background: var(--color-paper);
+  border: 1px dashed var(--color-signal-blue);
+}
+.makeup-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+  background: var(--color-signal-blue);
+  color: #fff;
+}
+@media (max-width: 640px) {
+  .comp-toolbar { flex-direction: column; align-items: stretch; min-width: 0; }
+  .comp-toolbar .seg { max-width: 100%; overflow-x: auto; }
+  .comp-toolbar select { min-width: 0; width: 100%; }
+  .comp-sugs li { flex-direction: column; align-items: stretch; }
+  .comp-actions button { flex: 1; }
+}

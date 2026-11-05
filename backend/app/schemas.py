@@ -6,6 +6,7 @@ from datetime import date, datetime
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 from app.models import (
+    CompensationStatus,
     LeaveScope,
     LeaveStatus,
     Role,
@@ -235,6 +236,164 @@ class FairnessRow(BaseModel):
     teacher_id: int
     name: str
     substitutions_given: int
+
+
+class WorkloadDay(BaseModel):
+    day_of_week: int
+    day_name: str
+    periods: int
+    hours: float
+
+
+class WorkloadRow(BaseModel):
+    teacher_id: int
+    name: str
+    role: Role
+    scheduled_periods_per_week: int
+    scheduled_hours_per_week: float
+    scheduled_hours_in_range: float
+    hours_substituted_for_others: float
+    periods_substituted_for_others: int
+    hours_given_up: float
+    periods_given_up: int
+    uncovered_hours: float
+    net_hours_in_range: float
+    daily: list[WorkloadDay]
+
+
+class WorkloadReport(BaseModel):
+    start: date
+    end: date
+    teaching_days: int
+    formula: str
+    rows: list[WorkloadRow]
+
+
+class CourseSlot(BaseModel):
+    day_of_week: int
+    day_name: str
+    period_label: str
+    start_time: str
+    end_time: str
+    periods: int
+    is_lab: bool
+    room: str
+
+
+class CourseOut(BaseModel):
+    subject_id: int
+    subject: str
+    subject_code: str
+    class_section_id: int
+    class_section: str
+    role_in_course: str
+    lead_teacher: str
+    co_teachers: list[str]
+    periods_per_week: int
+    hours_per_week: float
+    lecture_periods: int
+    lab_periods: int
+    lab_blocks: int
+    is_lab: bool
+    schedule: list[CourseSlot]
+
+
+class TeacherCourses(BaseModel):
+    teacher_id: int
+    name: str
+    role: Role
+    total_courses: int
+    total_periods_per_week: int
+    total_hours_per_week: float
+    lecture_periods: int
+    lab_periods: int
+    courses: list[CourseOut]
+
+
+class CoursesReport(BaseModel):
+    teachers: list[TeacherCourses]
+
+
+# ---------- Compensation (make-up classes) ----------
+class CompensationOut(BaseModel):
+    id: int
+    leave_id: int | None
+    substitution_id: int | None
+    teacher_id: int
+    teacher: str
+    subject: str
+    class_section: str
+    class_section_id: int
+    is_lab: bool
+    missed_date: date
+    missed_period: str
+    missed_day_of_week: int
+    periods: int
+    proposed_date: date | None
+    proposed_day_of_week: int | None
+    proposed_period: str | None
+    proposed_start_time: str | None
+    proposed_end_time: str | None
+    proposed_time_slot_id: int | None
+    proposed_time_slot2_id: int | None
+    room: str | None
+    room_id: int | None
+    status: CompensationStatus
+    notes: str | None
+    created_at: datetime
+    can_complete: bool
+
+
+class CompensationSlotRequest(BaseModel):
+    date: date
+    time_slot_id: int
+    time_slot2_id: int | None = None
+    room_id: int | None = None
+
+
+class CompensationSuggestionOut(BaseModel):
+    date: date
+    day_name: str
+    time_slot_id: int
+    time_slot2_id: int | None
+    period_label: str
+    start_time: str
+    end_time: str
+    room_id: int
+    room: str
+    week_offset: int
+    teacher_load_that_day: int
+    reason: str
+
+
+class CompensationSummary(BaseModel):
+    owed: int
+    proposed: int
+    scheduled: int
+    completed: int
+    cancelled: int
+
+
+class BackfillResult(BaseModel):
+    created: int
+    periods: int
+    skipped: int
+
+
+class CompensationCalendarItem(BaseModel):
+    id: int
+    teacher_id: int
+    teacher: str
+    class_section_id: int
+    class_section: str
+    subject: str
+    date: date
+    day_of_week: int
+    period_indexes: list[int]
+    periods: int
+    room: str | None
+    status: CompensationStatus
+    is_lab: bool
 
 
 class LeaveHistoryRow(BaseModel):

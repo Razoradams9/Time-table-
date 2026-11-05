@@ -1,121 +1,137 @@
-# Deploying the Timetable System
+# Deployment Guide
 
-Architecture for the prototype:
-
-- **Frontend** (React/Vite) → **Vercel**
-- **Backend** (FastAPI + OR-Tools) → **Fly.io** (kept always-on)
-- **Database** (Postgres) → **Neon** (free tier)
-
-Local dev still uses SQLite + the Vite proxy — nothing to change for that.
+- **Frontend** → Vercel (free)
+- **Backend** → Render (free web service, Docker)
+- **Database** → Neon (free Postgres)
 
 ---
 
-## 0. Push to GitHub (one time)
+## Step 1 — Push to GitHub
 
-From the project root (`time table/`):
+Make sure all changes are committed and pushed:
 
 ```bash
-git init
 git add .
-git commit -m "Timetable system: FastAPI + React, deploy-ready"
-git branch -M main
-git remote add origin https://github.com/Razoradams9/Time-table-.git
-git push -u origin main
+git commit -m "deploy: all features"
+git push
 ```
 
 ---
 
-## 1. Database — Neon (free Postgres)
+## Step 2 — Database (Neon)
 
-1. Sign up at https://neon.tech → **New Project**.
-2. Copy the **connection string** (looks like
-   `postgresql://user:pass@ep-xxx.aws.neon.tech/dbname?sslmode=require`).
-3. Keep it handy for step 2.
-
----
-
-## 2. Backend — Fly.io
-
-Install the CLI and log in:
-
-```bash
-# Windows (PowerShell)
-iwr https://fly.io/install.ps1 -useb | iex
-fly auth signup   # or: fly auth login
-```
-
-From the `backend/` folder:
-
-```bash
-cd backend
-fly launch --no-deploy        # pick a UNIQUE app name + a region near you
-                              # (it reuses the existing Dockerfile and fly.toml)
-```
-
-Set secrets (use YOUR Neon URL and a long random secret):
-
-```bash
-fly secrets set DATABASE_URL="postgresql://user:pass@ep-xxx.neon.tech/db?sslmode=require"
-fly secrets set SECRET_KEY="$(python -c 'import secrets;print(secrets.token_urlsafe(48))')"
-fly secrets set CORS_ORIGINS="https://YOUR-VERCEL-APP.vercel.app"
-```
-
-Deploy, then seed once:
-
-```bash
-fly deploy
-fly ssh console -C "python seed_once.py"   # loads the 14 teachers + data (only if empty)
-```
-
-Your backend is now at `https://<your-app-name>.fly.dev`. Check
-`https://<your-app-name>.fly.dev/api/health`.
-
-> After the first deploy, update `CORS_ORIGINS` to the real Vercel URL from
-> step 3 and run `fly deploy` again (or `fly secrets set` triggers a redeploy).
+1. Sign up at https://neon.tech → **New project**.
+2. Copy the **connection string** — it looks like:
+   `postgresql://user:pass@ep-xxx.aws.neon.tech/dbname?sslmode=require`
+3. Keep it for the next step.
 
 ---
 
-## 3. Frontend — Vercel
+## Step 3 — Backend (Render)
+
+1. Go to https://render.com → **New → Web Service**.
+2. Connect your GitHub repo.
+3. Settings:
+   - **Name:** `timetable-backend` (or anything you like)
+   - **Region:** pick the closest to you
+   - **Branch:** `main`
+   - **Runtime:** Docker
+   - **Dockerfile path:** `./backend/Dockerfile`
+   - **Docker context:** `./backend`
+   - **Instance type:** Free
+4. Add these **Environment Variables** (in the Render dashboard):
+
+   | Key | Value |
+   |-----|-------|
+   | `DATABASE_URL` | your Neon connection string |
+   | `SECRET_KEY` | any long random string (32+ chars) |
+   | `CORS_ORIGINS` | `*` for now (update after Vercel deploy) |
+
+5. Click **Create Web Service**. Render builds the Docker image, runs
+   `seed_once.py` automatically on first boot, then starts the server.
+6. Your backend URL will be `https://timetable-backend.onrender.com`
+   (or whatever name you chose). Test it:
+   `https://<your-service>.onrender.com/api/health`
+
+> **Free tier note:** Render's free tier spins down after 15 minutes of
+> inactivity. First request after sleep takes ~30 seconds. Upgrade to the
+> $7/month Starter plan to keep it always on.
+
+---
+
+## Step 4 — Frontend (Vercel)
 
 1. Go to https://vercel.com → **Add New → Project** → import the GitHub repo.
-2. **Root Directory:** set to `frontend`.
-3. Framework preset: **Vite** (auto-detected). Build command `npm run build`,
-   output `dist` (from `vercel.json`).
-4. **Environment Variable:**
-   - `VITE_API_URL` = `https://<your-app-name>.fly.dev`  (no trailing slash)
-5. **Deploy.**
+2. Set **Root Directory** to `frontend`.
+3. Framework: **Vite** (auto-detected). Build command `npm run build`, output `dist`.
+4. Add this **Environment Variable**:
 
-Vercel gives you `https://<project>.vercel.app`. Put that back into the
-backend's `CORS_ORIGINS` (step 2) if you haven't yet.
+   | Key | Value |
+   |-----|-------|
+   | `VITE_API_URL` | `https://<your-render-service>.onrender.com` |
+
+5. Click **Deploy**.
+6. Your frontend URL will be `https://<project>.vercel.app`.
 
 ---
 
-## 4. Verify
+## Step 5 — Wire CORS
+
+Once you have the Vercel URL, go back to Render → your service →
+**Environment** → update `CORS_ORIGINS` to:
+
+```
+https://<your-project>.vercel.app
+```
+
+Render will redeploy automatically.
+
+---
+
+## Step 6 — Verify
 
 1. Open the Vercel URL.
-2. Log in: `anjana@college.edu` / `password123`.
-3. **Timetable → Regenerate** to build the schedule.
-4. Try a leave + check auto-substitution.
+2. Log in: `anjana@college.edu` / `password123` (HOD).
+3. Go to **Timetable** — the 218-period schedule should be there.
+4. Try registering a leave and check that substitutions and make-ups are created.
+5. Log out and log back in as a teacher (e.g. `nisha@college.edu` / `password123`)
+   to check the restricted teacher portal.
 
 ---
 
-## Keeping it 24/7
+## Credentials (change these after first login)
 
-- `fly.toml` sets `min_machines_running = 1`, so the backend stays warm.
-- Vercel frontends are always-on by default.
-- If you ever see the backend sleeping, confirm `min_machines_running = 1` and
-  that you're on a plan that allows it.
+| Email | Password | Role |
+|-------|----------|------|
+| anjana@college.edu | password123 | HOD / Admin |
+| rajeev@college.edu | password123 | Teacher |
+| hari@college.edu | password123 | Teacher |
+| spurgen@college.edu | password123 | Teacher |
+| meenu@college.edu | password123 | Teacher |
+| joseph@college.edu | password123 | Teacher |
+| soumya@college.edu | password123 | Teacher |
+| andal@college.edu | password123 | Teacher |
+| sameeran@college.edu | password123 | Teacher |
+| sruthi@college.edu | password123 | Teacher |
+| nisha@college.edu | password123 | Teacher |
+| sanjay@college.edu | password123 | Teacher |
+| vipin@college.edu | password123 | Teacher |
+| mani@college.edu | password123 | Teacher |
 
-## Custom domain (later)
+---
 
-- **Vercel:** Project → Settings → Domains → add your domain, follow DNS steps.
-- **Fly:** `fly certs add api.yourdomain.com` and point DNS, then set
-  `VITE_API_URL` to the custom API domain.
+## Local development
 
-## Notes
+Backend:
+```powershell
+cd backend
+.\.venv\Scripts\python.exe -m uvicorn app.main:app --port 8010
+```
 
-- `seed.py` **wipes and recreates** the DB — local only.
-- `seed_once.py` is **safe for production** — seeds only when empty.
-- The frontend auto-signs in as `anjana@college.edu` / `password123` (there is
-  no login screen). Anyone with the site URL gets admin access, so do not
-  expose a public deployment without adding access control.
+Frontend:
+```powershell
+cd frontend
+npm run dev
+```
+
+Open http://localhost:5173. The Vite proxy forwards `/api` to port 8010.

@@ -52,6 +52,13 @@ class SubstitutionSource(str, enum.Enum):
     SUGGESTION = "SUGGESTION"  # accepted AI suggestion
 
 
+class CompensationStatus(str, enum.Enum):
+    PROPOSED = "PROPOSED"
+    SCHEDULED = "SCHEDULED"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
+
+
 # Many-to-many: which subjects a teacher is qualified to teach.
 teacher_subjects = Table(
     "teacher_subjects",
@@ -243,6 +250,43 @@ class Substitution(Base):
     timetable_entry: Mapped[TimetableEntry] = relationship()
     absent_teacher: Mapped[Teacher] = relationship(foreign_keys=[absent_teacher_id])
     substitute_teacher: Mapped[Teacher | None] = relationship(foreign_keys=[substitute_teacher_id])
+
+
+class Compensation(Base):
+    """A make-up class owed by the ABSENT teacher for a substituted period
+    (or a 2-period lab block). Proposed/scheduled on a future date."""
+    __tablename__ = "compensations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    leave_id: Mapped[int | None] = mapped_column(ForeignKey("leaves.id"), index=True)
+    substitution_id: Mapped[int | None] = mapped_column(ForeignKey("substitutions.id"), index=True)
+    substitution2_id: Mapped[int | None] = mapped_column(ForeignKey("substitutions.id"))
+    teacher_id: Mapped[int] = mapped_column(ForeignKey("teachers.id"), index=True)
+    subject_id: Mapped[int] = mapped_column(ForeignKey("subjects.id"))
+    class_section_id: Mapped[int] = mapped_column(ForeignKey("class_sections.id"))
+    is_lab: Mapped[bool] = mapped_column(Boolean, default=False)
+    missed_date: Mapped[date] = mapped_column(Date, index=True)
+    missed_time_slot_id: Mapped[int] = mapped_column(ForeignKey("time_slots.id"))
+    missed_time_slot2_id: Mapped[int | None] = mapped_column(ForeignKey("time_slots.id"))
+    periods: Mapped[int] = mapped_column(Integer, default=1)
+    proposed_date: Mapped[date | None] = mapped_column(Date, index=True)
+    proposed_time_slot_id: Mapped[int | None] = mapped_column(ForeignKey("time_slots.id"))
+    proposed_time_slot2_id: Mapped[int | None] = mapped_column(ForeignKey("time_slots.id"))
+    room_id: Mapped[int | None] = mapped_column(ForeignKey("rooms.id"))
+    status: Mapped[CompensationStatus] = mapped_column(
+        Enum(CompensationStatus), default=CompensationStatus.PROPOSED, index=True
+    )
+    notes: Mapped[str | None] = mapped_column(String(600))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+    teacher: Mapped[Teacher] = relationship(foreign_keys=[teacher_id])
+    subject: Mapped[Subject] = relationship(foreign_keys=[subject_id])
+    class_section: Mapped[ClassSection] = relationship(foreign_keys=[class_section_id])
+    room: Mapped[Room | None] = relationship(foreign_keys=[room_id])
+    missed_time_slot: Mapped[TimeSlot] = relationship(foreign_keys=[missed_time_slot_id])
+    missed_time_slot2: Mapped[TimeSlot | None] = relationship(foreign_keys=[missed_time_slot2_id])
+    proposed_time_slot: Mapped[TimeSlot | None] = relationship(foreign_keys=[proposed_time_slot_id])
+    proposed_time_slot2: Mapped[TimeSlot | None] = relationship(foreign_keys=[proposed_time_slot2_id])
 
 
 class Notification(Base):

@@ -48,7 +48,12 @@ async function request(path, { method = "GET", body, form, auth = true } = {}) {
     payload = JSON.stringify(body);
   }
 
-  const res = await fetch(apiUrl(path), { method, headers, body: payload });
+  let res;
+  try {
+    res = await fetch(apiUrl(path), { method, headers, body: payload });
+  } catch {
+    throw new Error("Cannot reach the server. Check your connection and try again.");
+  }
 
   if (!res.ok) {
     let detail = `${res.status} ${res.statusText}`;
@@ -62,6 +67,11 @@ async function request(path, { method = "GET", body, form, auth = true } = {}) {
     } catch {
       /* non-JSON error body */
     }
+    // An expired/invalid token on an authenticated call: drop it and tell the app.
+    if (res.status === 401 && auth && getToken()) {
+      setToken(null);
+      window.dispatchEvent(new Event("tt:unauthorized"));
+    }
     throw new Error(detail);
   }
 
@@ -70,12 +80,9 @@ async function request(path, { method = "GET", body, form, auth = true } = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-const defaultEmail = import.meta.env.VITE_DEFAULT_EMAIL || "anjana@college.edu";
-const defaultPassword = import.meta.env.VITE_DEFAULT_PASSWORD || "password123";
-
 export const api = {
   // ----- auth -----
-  login: async (email = defaultEmail, password = defaultPassword) => {
+  login: async (email, password) => {
     // Backend expects OAuth2 form fields: username (=email) + password.
     const tok = await request("/api/auth/login", {
       method: "POST",
@@ -131,6 +138,37 @@ export const api = {
   overview: (on) => request(`/api/dashboard/overview${on ? `?on=${on}` : ""}`),
   activity: (limit = 10) => request(`/api/dashboard/activity?limit=${limit}`),
   fairness: (start, end) => request(`/api/dashboard/fairness?start=${start}&end=${end}`),
+  workload: (start, end, teacherId) => {
+    const q = new URLSearchParams();
+    if (start) q.set("start", start);
+    if (end) q.set("end", end);
+    if (teacherId != null) q.set("teacher_id", teacherId);
+    const qs = q.toString();
+    return request(`/api/dashboard/workload${qs ? `?${qs}` : ""}`);
+  },
+  courses: (teacherId) =>
+    request(`/api/courses${teacherId != null ? `?teacher_id=${teacherId}` : ""}`),
+  // ----- compensations (make-up classes) -----
+  compensations: (params = {}) => {
+    const q = new URLSearchParams();
+    for (const [k, v] of Object.entries(params)) {
+      if (v !== undefined && v !== null && v !== "") q.set(k, v);
+    }
+    const qs = q.toString();
+    return request(`/api/compensations${qs ? `?${qs}` : ""}`);
+  },
+  compensationSummary: (teacherId) =>
+    request(`/api/compensations/summary${teacherId != null ? `?teacher_id=${teacherId}` : ""}`),
+  compensationCalendar: (on) => request(`/api/compensations/calendar?on=${on}`),
+  compensationSuggestions: (id) => request(`/api/compensations/${id}/suggestions`),
+  confirmCompensation: (id, slot) =>
+    request(`/api/compensations/${id}/confirm`, { method: "POST", body: slot }),
+  rescheduleCompensation: (id, slot) =>
+    request(`/api/compensations/${id}/reschedule`, { method: "POST", body: slot }),
+  completeCompensation: (id) => request(`/api/compensations/${id}/complete`, { method: "POST" }),
+  cancelCompensation: (id) => request(`/api/compensations/${id}/cancel`, { method: "POST" }),
+  repropose: (id) => request(`/api/compensations/${id}/repropose`, { method: "POST" }),
+  backfillCompensations: () => request("/api/compensations/backfill", { method: "POST" }),
   leaveHistory: (teacherId) => request(`/api/dashboard/leave-history/${teacherId}`),
 
   // ----- branding -----

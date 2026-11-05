@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     secret_key: str = "change-me-in-production-please-use-a-long-random-string"
     access_token_expire_minutes: int = 60 * 12  # 12 hours
     algorithm: str = "HS256"
+    # Login throttle: failed attempts allowed per email+IP within the window.
+    login_max_attempts: int = 5
+    login_window_seconds: int = 600
 
     # Deployment: comma-separated list of allowed CORS origins (the Vercel URL).
     # "*" allows any origin (fine for a prototype).

@@ -82,7 +82,9 @@ function Row({ label, time, days, cells, subCells, preferred, mode, breakAfter, 
           (preferred ? " preferred" : "") +
           (breakAfter ? " break-after" : "") +
           (covered ? " sub-covered" : "") +
-          (uncovered ? " sub-uncovered" : "");
+          (uncovered ? " sub-uncovered" : "") +
+          (e?.is_makeup ? " makeup" : "") +
+          (e?.is_makeup && e.makeup_status === "PROPOSED" ? " proposed" : "");
         if (!e) return <div className={cls} key={idx} />;
         // In adjusted mode, if this cell has a substitution the displayed
         // teacher is the substitute; the original (absent) teacher is shown
@@ -92,6 +94,7 @@ function Row({ label, time, days, cells, subCells, preferred, mode, breakAfter, 
             <div className="subj">
               {e.subject.name}
               {e.is_double && <span className="lab-tag">LAB</span>}
+              {e.is_makeup && <span className="makeup-tag">MAKE-UP</span>}
               {sub && (
                 <span className={"sub-tag " + (uncovered ? "red" : "")}>
                   {uncovered ? "UNCOVERED" : "SUB"}

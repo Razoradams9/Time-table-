@@ -36,8 +36,10 @@ def unread_count(db: Session = Depends(get_db), current: Teacher = Depends(get_c
 @router.post("/{notification_id}/read", response_model=NotificationOut)
 def mark_read(notification_id: int, db: Session = Depends(get_db), current: Teacher = Depends(get_current_teacher)):
     n = db.get(Notification, notification_id)
-    if n is None or n.teacher_id != current.id:
+    if n is None:
         raise HTTPException(status_code=404, detail="Notification not found.")
+    if n.teacher_id != current.id:
+        raise HTTPException(status_code=403, detail="This notification belongs to another user.")
     n.is_read = True
     db.commit()
     db.refresh(n)

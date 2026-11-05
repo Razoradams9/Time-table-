@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -13,19 +13,35 @@ from app.schemas import (
     TeacherOut,
     TimetableEntryOut,
 )
-from app.security import get_current_teacher, require_hod
+from app.security import forbid, get_current_teacher, is_hod, require_hod
 from app.services import audit
 from app.services.timetable_generator import generate_timetable
 
 router = APIRouter(prefix="/api/timetable", tags=["timetable"])
 
 
+def _taught_class_ids(teacher_id: int):
+    """Subquery: classes in which the teacher leads or co-teaches an active entry."""
+    return select(TimetableEntry.class_section_id).where(
+        TimetableEntry.is_active.is_(True),
+        or_(TimetableEntry.teacher_id == teacher_id, TimetableEntry.co_teacher_id == teacher_id),
+    )
+
+
 @router.get("/view/options")
 def view_options(db: Session = Depends(get_db), current: Teacher = Depends(get_current_teacher)):
-    """Teachers and classes to populate the two timetable-view pickers.
-    Available to any logged-in user (both views are read-only)."""
-    teachers = db.scalars(select(Teacher).order_by(Teacher.name)).all()
-    classes = db.scalars(select(ClassSection).order_by(ClassSection.name)).all()
+    """Teachers and classes to populate the timetable-view pickers.
+    HOD gets everyone; a teacher gets only themself and the classes they teach."""
+    if is_hod(current):
+        teachers = db.scalars(select(Teacher).order_by(Teacher.name)).all()
+        classes = db.scalars(select(ClassSection).order_by(ClassSection.name)).all()
+    else:
+        teachers = [current]
+        classes = db.scalars(
+            select(ClassSection)
+            .where(ClassSection.id.in_(_taught_class_ids(current.id)))
+            .order_by(ClassSection.name)
+        ).all()
     return {
         "teachers": [TeacherOut.model_validate(t, from_attributes=True) for t in teachers],
         "classes": [ClassSectionOut.model_validate(c, from_attributes=True) for c in classes],
@@ -34,7 +50,10 @@ def view_options(db: Session = Depends(get_db), current: Teacher = Depends(get_c
 
 @router.get("/view/teacher/{teacher_id}", response_model=list[TimetableEntryOut])
 def teacher_view(teacher_id: int, db: Session = Depends(get_db), current: Teacher = Depends(get_current_teacher)):
-    """Teacher-wise timetable: every period this teacher leads or co-teaches."""
+    """Teacher-wise timetable: every period this teacher leads or co-teaches.
+    A teacher may only request their own."""
+    if not is_hod(current) and teacher_id != current.id:
+        forbid("You can only view your own timetable.")
     return db.scalars(
         select(TimetableEntry).where(
             TimetableEntry.is_active.is_(True),
@@ -46,14 +65,16 @@ def teacher_view(teacher_id: int, db: Session = Depends(get_db), current: Teache
 
 @router.get("/view/class/{class_id}", response_model=list[TimetableEntryOut])
 def class_view(class_id: int, db: Session = Depends(get_db), current: Teacher = Depends(get_current_teacher)):
-    """Stream-wise timetable: every period for a class/section."""
+    """Stream-wise timetable: every period for a class/section.
+    A teacher may only request a class they teach."""
+    if not is_hod(current) and class_id not in set(db.scalars(_taught_class_ids(current.id)).all()):
+        forbid("You can only view classes you teach.")
     return db.scalars(
         select(TimetableEntry).where(
             TimetableEntry.is_active.is_(True),
             TimetableEntry.class_section_id == class_id,
         )
     ).all()
-
 
 @router.post("/generate", response_model=GenerationResult)
 def generate(db: Session = Depends(get_db), hod: Teacher = Depends(require_hod)):

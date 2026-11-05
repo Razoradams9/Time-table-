@@ -15,9 +15,19 @@ const TOPICS = [
     body: "View the weekly timetable by teacher or by class. HODs can generate and approve a new version.",
   },
   {
+    icon: "subjects",
+    title: "Courses",
+    body: "See which courses every teacher takes, for which class, with weekly periods, hours and schedule.",
+  },
+  {
     icon: "leaves",
     title: "Leaves",
     body: "Register a leave for an upcoming day; substitutes are assigned automatically for affected periods.",
+  },
+  {
+    icon: "substitutions",
+    title: "Compensations",
+    body: "Make-up classes owed after a substitution are scheduled automatically. Pick another slot or mark one done here.",
   },
   {
     icon: "substitutions",
@@ -34,7 +44,7 @@ const TOPICS = [
   {
     icon: "reports",
     title: "Reports",
-    body: "Review substitution fairness across staff and export the figures as CSV or PDF.",
+    body: "Review substitution fairness and teaching-hour workload across staff, and export the fairness figures as CSV or PDF.",
     hod: true,
   },
   {
@@ -87,6 +97,21 @@ const FAQS = [
     a: "On the Reports page, pick a date range to see each teacher's substitution count, then use the CSV or PDF buttons to download the figures.",
     hod: true,
     tags: ["report", "export", "csv", "pdf"],
+  },
+  {
+    q: "Where can I see how many hours a teacher teaches?",
+    a: "HODs: open Reports and switch to the Workload tab to see every teacher's weekly hours, pick any week or date range, and compare daily loads. Everyone: the My teaching hours card on the Dashboard shows your own hours. Net hours = scheduled hours - periods covered by others + periods you substituted for.",
+    tags: ["hours", "workload", "teaching load"],
+  },
+  {
+    q: "Where can I see which courses each teacher takes?",
+    a: "Open Courses from the sidebar. Each teacher has a card listing their courses (subject and class) with periods and hours per week and the days they meet. Use the search box to find a teacher, subject or class, or the teacher filter to focus on one person. Lab courses carry a LAB tag. The data comes from the active timetable, so it updates when a new version is approved.",
+    tags: ["course", "subject", "teacher"],
+  },
+  {
+    q: "How do make-up classes (compensations) work?",
+    a: "When a teacher's period is covered by a substitute, the absent teacher owes a make-up class for the same subject and class. The system books a real slot automatically, within the next three weeks: after the missed date, Monday to Saturday, inside the class's morning or afternoon window, with the teacher, class and a suitable room all free, no leave that day, within the daily period limit and at most three periods in a row. A lab block is made up as two consecutive periods where possible. Nobody has to confirm it: the teacher and HOD are notified, and the make-up appears as a MAKE-UP cell on the Adjusted timetable for that date. If no slot is free yet, it waits and is retried automatically. Open Compensations to pick another slot or mark one done once it has taken place. If the teacher later takes leave on that day, the make-up is moved automatically. Cancelling a leave cancels its make-ups. Only the HOD can cancel a make-up.",
+    tags: ["compensation", "make-up", "makeup", "syllabus", "substitute"],
   },
   {
     q: "Where do notifications come from?",

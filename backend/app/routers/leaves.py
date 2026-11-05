@@ -21,7 +21,7 @@ from app.models import (
 )
 from app.schemas import LeaveCreate, LeaveOut
 from app.security import get_current_teacher
-from app.services import audit
+from app.services import audit, compensation
 from app.services.notifications import notify
 from app.services.substitution_engine import assign_substitutes_for_leave
 
@@ -100,6 +100,10 @@ def create_leave(
     # Identify affected periods and assign substitutes (Req 4.4 + Req 5).
     subs = assign_substitutes_for_leave(db, leave)
 
+    # Make-up classes owed by the absent teacher for the substituted periods.
+    compensation.handle_new_leave_conflicts(db, leave)
+    compensation.create_for_substitutions(db, subs, actor_id=current.id)
+
     audit.log(db, actor_id=current.id, action="CREATE", entity="leave", entity_id=leave.id,
               detail=f"{payload.scope.value} on {payload.leave_date}; {len(subs)} periods affected.")
 
@@ -160,6 +164,7 @@ def cancel_leave(
         s.status = SubstitutionStatus.CANCELLED
 
     leave.status = LeaveStatus.CANCELLED
+    compensation.cancel_for_leave(db, leave, current.id)
     audit.log(db, actor_id=current.id, action="CANCEL", entity="leave", entity_id=leave.id,
               detail=f"Reverted {len(related)} substitution(s).")
     db.commit()

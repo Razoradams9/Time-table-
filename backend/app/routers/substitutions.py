@@ -21,8 +21,8 @@ from app.schemas import (
     SubstitutionDetail,
     Suggestion,
 )
-from app.security import get_current_teacher, require_hod
-from app.services import audit
+from app.security import forbid, get_current_teacher, is_hod, require_hod
+from app.services import audit, compensation
 from app.services.ai_assist import explain_substitution, suggest_for_uncovered
 from app.services.notifications import notify
 from app.services.substitution_engine import rank_candidates
@@ -97,6 +97,8 @@ def explanation(sub_id: int, db: Session = Depends(get_db), current: Teacher = D
     sub = db.get(Substitution, sub_id)
     if sub is None:
         raise HTTPException(status_code=404, detail="Substitution not found.")
+    if not is_hod(current) and current.id not in (sub.absent_teacher_id, sub.substitute_teacher_id):
+        forbid("You can only view substitutions you are part of.")
     return {"explanation": explain_substitution(sub)}
 
 
@@ -141,6 +143,7 @@ def manual_assign(
 
     audit.log(db, actor_id=hod.id, action="OVERRIDE", entity="substitution", entity_id=sub.id,
               detail=f"Assigned {new_teacher.name}.")
+    compensation.ensure_for_substitution(db, sub)  # no-op if already tracked
     db.commit()
     db.refresh(sub)
     return to_detail(sub)

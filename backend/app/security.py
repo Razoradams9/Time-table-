@@ -86,6 +86,14 @@ def get_current_teacher(
     return teacher
 
 
+def is_hod(user: Teacher) -> bool:
+    return user.role == Role.HOD
+
+
+def forbid(detail: str = "You do not have access to this data.") -> None:
+    raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=detail)
+
+
 def require_hod(current: Teacher = Depends(get_current_teacher)) -> Teacher:
     if current.role != Role.HOD:
         raise HTTPException(

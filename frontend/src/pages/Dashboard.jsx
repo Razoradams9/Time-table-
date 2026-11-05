@@ -4,6 +4,7 @@ import { api } from "../api";
 import { useAuth } from "../auth.jsx";
 import { SkeletonStats, SkeletonRows } from "../components/Skeleton.jsx";
 import { Icon, icons } from "../components/Icons.jsx";
+import MyHoursCard from "../components/MyHoursCard.jsx";
 
 function greeting() {
   const h = new Date().getHours();
@@ -211,6 +212,7 @@ export default function Dashboard() {
 
         {/* Right / side column */}
         <div className="dash-col-side">
+          <MyHoursCard />
           {isHod && (
             <div className="card">
               <h2>Quick actions</h2>
@@ -246,16 +248,6 @@ export default function Dashboard() {
                   ))}
                 </ul>
               )}
-            </div>
-          )}
-
-          {!isHod && (
-            <div className="card">
-              <h2>Your day</h2>
-              <p className="sub">
-                You have {todaysClasses.length} class{todaysClasses.length === 1 ? "" : "es"} scheduled today.
-              </p>
-              <Link to="/leaves"><button style={{ width: "100%" }}>Register a leave</button></Link>
             </div>
           )}
         </div>
@@ -316,7 +308,8 @@ function EmptyRow({ cols, icon, text }) {
 }
 
 function dotTone(action) {
-  if (action === "OVERRIDE" || action === "CANCEL") return "amber";
+  if (action === "OVERRIDE" || action === "CANCEL" || action === "COMP_CANCELLED") return "amber";
+  if (action === "COMP_SCHEDULED" || action === "COMP_COMPLETED") return "green";
   if (action === "CREATE") return "green";
   if (action === "APPROVE" || action === "GENERATE") return "indigo";
   return "blue";
@@ -328,6 +321,12 @@ function humanAction(a) {
     CREATE: `${a.entity[0].toUpperCase() + a.entity.slice(1)} created`,
     CANCEL: "Leave cancelled",
     OVERRIDE: "Substitution reassigned",
+    COMP_PROPOSED: "Make-up class proposed",
+    COMP_SCHEDULED: "Make-up class scheduled",
+    COMP_RESCHEDULED: "Make-up class rescheduled",
+    COMP_COMPLETED: "Make-up class completed",
+    COMP_CANCELLED: "Make-up class cancelled",
+    COMP_BACKFILL: "Make-ups created for earlier substitutions",
   };
   const base = map[a.action] || `${a.action} ${a.entity}`;
   return a.actor ? `${base} · ${a.actor}` : base;
