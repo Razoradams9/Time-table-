@@ -1,0 +1,5 @@
+INFO:     Started server process [6788]
+INFO:     Waiting for application startup.
+WARNING:app.main:SECRET_KEY is still the insecure default; set SECRET_KEY in backend/.env before deploying
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8010 (Press CTRL+C to quit)

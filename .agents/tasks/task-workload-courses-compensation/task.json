@@ -1,0 +1,7 @@
+{
+  "task_id": "task-workload-courses-compensation",
+  "task_description": "Three independent features for the college timetable app (FastAPI+SQLAlchemy/SQLite backend, React+Vite frontend): (1) total teaching hours per teacher (Workload), (2) a Courses page listing every teacher's courses, (3) Compensation: make-up classes owed by a teacher whose period was substituted, with an auto-suggestion engine, a Compensations page and make-up cells in the Adjusted timetable. Full design in c:/Users/razor/OneDrive/Documents/GitHub/Time-table-/.agents/tasks/plan.md",
+  "status": "pending",
+  "feature_order": ["FEAT-001", "FEAT-002", "FEAT-003"],
+  "blocked_reason": null
+}
