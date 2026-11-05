@@ -18,6 +18,10 @@ def _normalise(url: str) -> str:
         url = "postgresql+psycopg://" + url[len("postgres://"):]
     elif url.startswith("postgresql://"):
         url = "postgresql+psycopg://" + url[len("postgresql://"):]
+    # Neon pooler uses port 5432 + sslmode; channel_binding confuses psycopg.
+    if "channel_binding" in url:
+        import re
+        url = re.sub(r"[&?]channel_binding=[^&]*", "", url).rstrip("?&")
     return url
 
 

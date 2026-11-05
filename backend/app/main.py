@@ -41,7 +41,12 @@ app.add_middleware(
 @app.on_event("startup")
 def on_startup() -> None:
     # Create tables if they don't exist. (For real deployments use migrations.)
-    Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=engine)
+        logging.getLogger(__name__).info("Database tables created/verified OK.")
+    except Exception as exc:
+        logging.getLogger(__name__).error("Database connection failed: %s", exc)
+        raise
     if settings.secret_key == _DEFAULT_SECRET:
         logging.getLogger(__name__).warning(
             "SECRET_KEY is still the insecure default; set SECRET_KEY in backend/.env before deploying"
